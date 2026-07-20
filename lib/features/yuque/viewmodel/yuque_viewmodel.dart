@@ -191,20 +191,26 @@ class YuqueViewModel extends ChangeNotifier {
     final dir = Directory(_batchFolderPath!);
     final items = <MdFileItem>[];
     try {
-      await for (final entity in dir.list(recursive: true, followLinks: false)) {
-        if (entity is File &&
-            entity.path.toLowerCase().endsWith('.md')) {
+      await for (final entity in dir.list(
+        recursive: true,
+        followLinks: false,
+      )) {
+        if (entity is File && entity.path.toLowerCase().endsWith('.md')) {
           final content = await entity.readAsString();
-          final name = entity.uri.pathSegments.last
-              .replaceAll(RegExp(r'\.[mM][dD]$'), '');
+          final name = entity.uri.pathSegments.last.replaceAll(
+            RegExp(r'\.[mM][dD]$'),
+            '',
+          );
           final (:slug, :title, :body) = _parseFrontMatter(content);
-          items.add(MdFileItem(
-            filePath: entity.path,
-            fileName: name,
-            slug: slug ?? name,
-            title: title ?? name,
-            body: body,
-          ));
+          items.add(
+            MdFileItem(
+              filePath: entity.path,
+              fileName: name,
+              slug: slug ?? name,
+              title: title ?? name,
+              body: body,
+            ),
+          );
         }
       }
     } on FileSystemException catch (e) {
@@ -249,8 +255,13 @@ class YuqueViewModel extends ChangeNotifier {
 
     for (final file in _scannedFiles) {
       try {
-        final docId =
-            await _service.createDoc(_token, bid, file.slug, file.title, file.body);
+        final docId = await _service.createDoc(
+          _token,
+          bid,
+          file.slug,
+          file.title,
+          file.body,
+        );
         _uploadResults = [
           ..._uploadResults,
           UploadResult(file: file, success: true, docId: docId),
@@ -271,6 +282,113 @@ class YuqueViewModel extends ChangeNotifier {
 
     _isBatchUploading = false;
     notifyListeners();
+  }
+
+  // ── 目录更新状态 ─────────────────────────────────────────────────────────────
+  String _tocBookId = '';
+  List<MdFileItem> _tocFiles = [];
+  bool _isTocUpdating = false;
+  String? _tocErrorMessage;
+  bool _tocUpdated = false;
+
+  String get tocBookId => _tocBookId;
+  List<MdFileItem> get tocFiles => List.unmodifiable(_tocFiles);
+  bool get isTocUpdating => _isTocUpdating;
+  String? get tocErrorMessage => _tocErrorMessage;
+  bool get tocUpdated => _tocUpdated;
+
+  /// 根据当前 tocFiles 生成目录 Markdown
+  String get generatedToc =>
+      _tocFiles.map((f) => '- [${f.title}](${f.slug})').join('\n');
+
+  /// 选择 .md 文件（支持多选），追加到 tocFiles（自动去重）
+  Future<void> pickTocFiles() async {
+    final result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['md'],
+      allowMultiple: true,
+    );
+    if (result == null || result.files.isEmpty) return;
+    _tocUpdated = false;
+    _tocErrorMessage = null;
+    for (final pf in result.files) {
+      final path = pf.path;
+      if (path == null) continue;
+      if (_tocFiles.any((f) => f.filePath == path)) continue;
+      final content = await File(path).readAsString();
+      final name = pf.name.replaceAll(RegExp(r'\.[mM][dD]$'), '');
+      final (:slug, :title, :body) = _parseFrontMatter(content);
+      _tocFiles.add(MdFileItem(
+        filePath: path,
+        fileName: name,
+        slug: slug ?? name,
+        title: title ?? name,
+        body: body,
+      ));
+    }
+    notifyListeners();
+  }
+
+  /// 从列表中移除指定索引的文件
+  void removeTocFile(int index) {
+    if (index < 0 || index >= _tocFiles.length) return;
+    _tocFiles.removeAt(index);
+    _tocUpdated = false;
+    notifyListeners();
+  }
+
+  /// 拖拽排序：将 oldIndex 处的文件移动到 newIndex（由 onReorderItem 传入，已预调整）
+  void reorderTocFiles(int oldIndex, int newIndex) {
+    final item = _tocFiles.removeAt(oldIndex);
+    _tocFiles.insert(newIndex, item);
+    notifyListeners();
+  }
+
+  /// 清空已选文件
+  void clearTocFiles() {
+    _tocFiles = [];
+    _tocUpdated = false;
+    _tocErrorMessage = null;
+    notifyListeners();
+  }
+
+  /// 调用 PUT /api/v2/repos/{book_id} 更新知识库目录
+  Future<void> updateToc(String bookId) async {
+    _tocBookId = bookId.trim();
+    if (_token.isEmpty) {
+      _tocErrorMessage = '请先填写并保存 API Token';
+      notifyListeners();
+      return;
+    }
+    if (_tocBookId.isEmpty) {
+      _tocErrorMessage = '请填写知识库 ID';
+      notifyListeners();
+      return;
+    }
+    final bid = int.tryParse(_tocBookId);
+    if (bid == null) {
+      _tocErrorMessage = '知识库 ID 必须为数字';
+      notifyListeners();
+      return;
+    }
+    if (_tocFiles.isEmpty) {
+      _tocErrorMessage = '请先选择 .md 文件';
+      notifyListeners();
+      return;
+    }
+    _isTocUpdating = true;
+    _tocErrorMessage = null;
+    _tocUpdated = false;
+    notifyListeners();
+    try {
+      await _service.updateToc(_token, bid, generatedToc);
+      _tocUpdated = true;
+    } on Exception catch (e) {
+      _tocErrorMessage = e.toString().replaceFirst('Exception: ', '');
+    } finally {
+      _isTocUpdating = false;
+      notifyListeners();
+    }
   }
 }
 

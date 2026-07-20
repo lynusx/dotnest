@@ -6,6 +6,7 @@ import '../viewmodel/yuque_viewmodel.dart';
 import 'batch_upload_page.dart';
 import 'repo_list_page.dart';
 import 'doc_list_page.dart';
+import 'toc_update_page.dart';
 
 class YuquePage extends StatefulWidget {
   const YuquePage({super.key});
@@ -26,7 +27,7 @@ class _YuquePageState extends State<YuquePage>
     super.initState();
     _tokenCtrl = TextEditingController();
     _loginCtrl = TextEditingController();
-    _tabCtrl = TabController(length: 3, vsync: this);
+    _tabCtrl = TabController(length: 4, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final vm = context.read<YuqueViewModel>();
@@ -79,6 +80,7 @@ class _YuquePageState extends State<YuquePage>
                 RepoListPage(),
                 DocListPage(),
                 BatchUploadPage(),
+                TocUpdatePage(),
               ],
             ),
           ),
@@ -108,6 +110,7 @@ class _YuquePageState extends State<YuquePage>
             Tab(text: '知识库列表'),
             Tab(text: '文档列表'),
             Tab(text: '批量创建'),
+            Tab(text: '目录更新'),
           ],
       ),
     );

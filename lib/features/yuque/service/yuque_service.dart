@@ -44,13 +44,16 @@ class YuqueService {
   Future<(List<YuqueDoc>, int)> fetchAllDocs(String token, int bookId) async {
     try {
       const pageSize = 100;
-      final (total, firstPage) =
-          await _fetchDocPage(token, bookId, 0, pageSize);
+      final (total, firstPage) = await _fetchDocPage(
+        token,
+        bookId,
+        0,
+        pageSize,
+      );
       final docs = List<YuqueDoc>.from(firstPage);
 
       for (int offset = pageSize; offset < total; offset += pageSize) {
-        final (_, page) =
-            await _fetchDocPage(token, bookId, offset, pageSize);
+        final (_, page) = await _fetchDocPage(token, bookId, offset, pageSize);
         docs.addAll(page);
       }
       return (docs, total);
@@ -59,6 +62,34 @@ class YuqueService {
       if (status == 401) throw Exception('Token 无效或未通过鉴权');
       if (status == 403) throw Exception('无访问权限');
       if (status == 404) throw Exception('知识库 "$bookId" 不存在');
+      if (status == 429) throw Exception('请求频率超限，请稍后重试');
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw Exception('请求超时，请检查网络连接');
+      }
+      if (e.type == DioExceptionType.connectionError) {
+        throw Exception('网络连接失败，请检查网络');
+      }
+      throw Exception('请求失败: ${e.message}');
+    }
+  }
+
+  // ── 更新知识库目录 ─────────────────────────────────────────────────────────
+
+  /// PUT /api/v2/repos/{book_id} — 更新知识库 TOC
+  Future<void> updateToc(String token, int bookId, String toc) async {
+    try {
+      await _dio.put(
+        '/api/v2/repos/$bookId',
+        data: {'toc': toc},
+        options: Options(headers: {'X-Auth-Token': token}),
+      );
+    } on DioException catch (e) {
+      final status = e.response?.statusCode;
+      if (status == 401) throw Exception('Token 无效或未通过鉴权');
+      if (status == 403) throw Exception('无操作权限');
+      if (status == 404) throw Exception('知识库 "$bookId" 不存在');
+      if (status == 422) throw Exception('目录格式校验失败');
       if (status == 429) throw Exception('请求频率超限，请稍后重试');
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
