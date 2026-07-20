@@ -13,9 +13,11 @@ class YuquePage extends StatefulWidget {
   State<YuquePage> createState() => _YuquePageState();
 }
 
-class _YuquePageState extends State<YuquePage> {
+class _YuquePageState extends State<YuquePage>
+    with SingleTickerProviderStateMixin {
   late final TextEditingController _tokenCtrl;
   late final TextEditingController _loginCtrl;
+  late final TabController _tabCtrl;
   bool _obscureToken = true;
 
   @override
@@ -23,6 +25,7 @@ class _YuquePageState extends State<YuquePage> {
     super.initState();
     _tokenCtrl = TextEditingController();
     _loginCtrl = TextEditingController();
+    _tabCtrl = TabController(length: 2, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final vm = context.read<YuqueViewModel>();
@@ -45,6 +48,7 @@ class _YuquePageState extends State<YuquePage> {
   void dispose() {
     _tokenCtrl.dispose();
     _loginCtrl.dispose();
+    _tabCtrl.dispose();
     super.dispose();
   }
 
@@ -61,20 +65,46 @@ class _YuquePageState extends State<YuquePage> {
             thickness: 1,
             color: Colors.black.withValues(alpha: 0.06),
           ),
+          _buildTabBar(),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: Colors.black.withValues(alpha: 0.06),
+          ),
           Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Expanded(child: RepoListPage()),
-                VerticalDivider(
-                  width: 1,
-                  thickness: 1,
-                  color: Colors.black.withValues(alpha: 0.06),
-                ),
-                const Expanded(child: DocListPage()),
+            child: TabBarView(
+              controller: _tabCtrl,
+              children: const [
+                RepoListPage(),
+                DocListPage(),
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  // ── TabBar ──────────────────────────────────────────────────────────────────
+
+  Widget _buildTabBar() {
+    return Container(
+      color: AppColors.cardBg,
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: TabBar(
+        controller: _tabCtrl,
+        isScrollable: false,
+        labelStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: TextStyle(fontSize: 13.sp),
+        labelColor: AppColors.sidebarIndicator,
+        unselectedLabelColor: AppColors.textSecondary,
+        indicatorColor: AppColors.sidebarIndicator,
+        indicatorWeight: 2,
+        indicatorSize: TabBarIndicatorSize.label,
+        dividerColor: Colors.transparent,
+        tabs: const [
+          Tab(text: '知识库列表'),
+          Tab(text: '文档列表'),
         ],
       ),
     );
