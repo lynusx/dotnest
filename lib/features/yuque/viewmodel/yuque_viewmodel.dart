@@ -286,67 +286,41 @@ class YuqueViewModel extends ChangeNotifier {
 
   // ── 目录更新状态 ─────────────────────────────────────────────────────────────
   String _tocBookId = '';
-  List<MdFileItem> _tocFiles = [];
+  String? _tocFileName;
+  String? _tocRawContent;
   bool _isTocUpdating = false;
   String? _tocErrorMessage;
   bool _tocUpdated = false;
 
   String get tocBookId => _tocBookId;
-  List<MdFileItem> get tocFiles => List.unmodifiable(_tocFiles);
+  String? get tocFileName => _tocFileName;
+  String? get tocRawContent => _tocRawContent;
   bool get isTocUpdating => _isTocUpdating;
   String? get tocErrorMessage => _tocErrorMessage;
   bool get tocUpdated => _tocUpdated;
 
-  /// 根据当前 tocFiles 生成目录 Markdown
-  String get generatedToc =>
-      _tocFiles.map((f) => '- [${f.title}](${f.slug})').join('\n');
-
-  /// 选择 .md 文件（支持多选），追加到 tocFiles（自动去重）
-  Future<void> pickTocFiles() async {
+  /// 选择单个 .md 文件，读取原始内容作为 toc
+  Future<void> pickTocFile() async {
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['md'],
-      allowMultiple: true,
+      allowMultiple: false,
     );
     if (result == null || result.files.isEmpty) return;
+    final pf = result.files.first;
+    final path = pf.path;
+    if (path == null) return;
+    _tocFileName = pf.name;
+    _tocRawContent = await File(path).readAsString();
     _tocUpdated = false;
     _tocErrorMessage = null;
-    for (final pf in result.files) {
-      final path = pf.path;
-      if (path == null) continue;
-      if (_tocFiles.any((f) => f.filePath == path)) continue;
-      final content = await File(path).readAsString();
-      final name = pf.name.replaceAll(RegExp(r'\.[mM][dD]$'), '');
-      final (:slug, :title, :body) = _parseFrontMatter(content);
-      _tocFiles.add(MdFileItem(
-        filePath: path,
-        fileName: name,
-        slug: slug ?? name,
-        title: title ?? name,
-        body: body,
-      ));
-    }
     notifyListeners();
   }
 
-  /// 从列表中移除指定索引的文件
-  void removeTocFile(int index) {
-    if (index < 0 || index >= _tocFiles.length) return;
-    _tocFiles.removeAt(index);
-    _tocUpdated = false;
-    notifyListeners();
-  }
-
-  /// 拖拽排序：将 oldIndex 处的文件移动到 newIndex（由 onReorderItem 传入，已预调整）
-  void reorderTocFiles(int oldIndex, int newIndex) {
-    final item = _tocFiles.removeAt(oldIndex);
-    _tocFiles.insert(newIndex, item);
-    notifyListeners();
-  }
-
-  /// 清空已选文件
-  void clearTocFiles() {
-    _tocFiles = [];
+  /// 清除已选文件
+  void clearTocFile() {
+    _tocFileName = null;
+    _tocRawContent = null;
     _tocUpdated = false;
     _tocErrorMessage = null;
     notifyListeners();
@@ -371,7 +345,7 @@ class YuqueViewModel extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    if (_tocFiles.isEmpty) {
+    if (_tocRawContent == null) {
       _tocErrorMessage = '请先选择 .md 文件';
       notifyListeners();
       return;
@@ -381,7 +355,7 @@ class YuqueViewModel extends ChangeNotifier {
     _tocUpdated = false;
     notifyListeners();
     try {
-      await _service.updateToc(_token, bid, generatedToc);
+      await _service.updateToc(_token, bid, _tocRawContent!);
       _tocUpdated = true;
     } on Exception catch (e) {
       _tocErrorMessage = e.toString().replaceFirst('Exception: ', '');
