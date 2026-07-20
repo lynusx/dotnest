@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -237,6 +238,33 @@ class _TableRow extends StatefulWidget {
 class _TableRowState extends State<_TableRow> {
   bool _hovered = false;
 
+  Future<void> _copy(BuildContext context, String text) async {
+    await Clipboard.setData(ClipboardData(text: text));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('已复制：$text', style: TextStyle(fontSize: 13.sp)),
+        duration: const Duration(milliseconds: 1500),
+        behavior: SnackBarBehavior.floating,
+        width: 300.w,
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+      ),
+    );
+  }
+
+  Widget _copyable(BuildContext context, String value, Widget child) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => _copy(context, value),
+        child: child,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bg = _hovered
@@ -256,36 +284,48 @@ class _TableRowState extends State<_TableRow> {
           children: [
             Expanded(
               flex: 5,
-              child: Text(
+              child: _copyable(
+                context,
                 widget.repo.name as String,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  color: AppColors.textPrimary,
+                Text(
+                  widget.repo.name as String,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
             ),
             SizedBox(
               width: 90.w,
-              child: Text(
+              child: _copyable(
+                context,
                 '${widget.repo.id}',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  color: AppColors.textSecondary,
-                  fontFeatures: const [FontFeature.tabularFigures()],
+                Text(
+                  '${widget.repo.id}',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: AppColors.textSecondary,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
                 ),
               ),
             ),
             Expanded(
               flex: 3,
-              child: Text(
+              child: _copyable(
+                context,
                 widget.repo.slug as String,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  color: AppColors.textSecondary,
+                Text(
+                  widget.repo.slug as String,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
             ),
