@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../viewmodel/yuque_viewmodel.dart';
 import 'repo_list_page.dart';
+import 'doc_list_page.dart';
 
 class YuquePage extends StatefulWidget {
   const YuquePage({super.key});
@@ -60,7 +61,20 @@ class _YuquePageState extends State<YuquePage> {
             thickness: 1,
             color: Colors.black.withValues(alpha: 0.06),
           ),
-          const Expanded(child: RepoListPage()),
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Expanded(child: RepoListPage()),
+                VerticalDivider(
+                  width: 1,
+                  thickness: 1,
+                  color: Colors.black.withValues(alpha: 0.06),
+                ),
+                const Expanded(child: DocListPage()),
+              ],
+            ),
+          ),
         ],
       ),
     );
