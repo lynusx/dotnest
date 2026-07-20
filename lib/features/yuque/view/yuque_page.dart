@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../viewmodel/yuque_viewmodel.dart';
+import 'batch_upload_page.dart';
 import 'repo_list_page.dart';
 import 'doc_list_page.dart';
 
@@ -25,7 +26,7 @@ class _YuquePageState extends State<YuquePage>
     super.initState();
     _tokenCtrl = TextEditingController();
     _loginCtrl = TextEditingController();
-    _tabCtrl = TabController(length: 2, vsync: this);
+    _tabCtrl = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final vm = context.read<YuqueViewModel>();
@@ -77,6 +78,7 @@ class _YuquePageState extends State<YuquePage>
               children: const [
                 RepoListPage(),
                 DocListPage(),
+                BatchUploadPage(),
               ],
             ),
           ),
@@ -103,9 +105,10 @@ class _YuquePageState extends State<YuquePage>
         indicatorSize: TabBarIndicatorSize.label,
         dividerColor: Colors.transparent,
         tabs: const [
-          Tab(text: '知识库列表'),
-          Tab(text: '文档列表'),
-        ],
+            Tab(text: '知识库列表'),
+            Tab(text: '文档列表'),
+            Tab(text: '批量创建'),
+          ],
       ),
     );
   }

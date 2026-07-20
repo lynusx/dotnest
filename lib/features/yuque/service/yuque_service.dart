@@ -71,6 +71,42 @@ class YuqueService {
     }
   }
 
+  // ── 创建文档 ───────────────────────────────────────────────────────────────
+
+  /// POST /api/v2/repos/{book_id}/docs — 创建单个文档，返回新文档 ID
+  Future<int> createDoc(
+    String token,
+    int bookId,
+    String slug,
+    String title,
+    String body,
+  ) async {
+    try {
+      final response = await _dio.post(
+        '/api/v2/repos/$bookId/docs',
+        data: {'slug': slug, 'title': title, 'body': body},
+        options: Options(headers: {'X-Auth-Token': token}),
+      );
+      final data = response.data['data'] as Map<String, dynamic>;
+      return (data['id'] as num).toInt();
+    } on DioException catch (e) {
+      final status = e.response?.statusCode;
+      if (status == 401) throw Exception('Token 无效或未通过鉴权');
+      if (status == 403) throw Exception('无操作权限');
+      if (status == 404) throw Exception('知识库 "$bookId" 不存在');
+      if (status == 422) throw Exception('请求参数校验失败');
+      if (status == 429) throw Exception('请求频率超限，请稍后重试');
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw Exception('请求超时，请检查网络连接');
+      }
+      if (e.type == DioExceptionType.connectionError) {
+        throw Exception('网络连接失败，请检查网络');
+      }
+      throw Exception('请求失败: ${e.message}');
+    }
+  }
+
   // ── 知识库列表 ─────────────────────────────────────────────────────────────
 
   /// GET /api/v2/users/{login}/repos

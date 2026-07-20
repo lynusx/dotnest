@@ -1,6 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../model/md_file_item.dart';
+import '../model/upload_result.dart';
 import '../model/yuque_doc.dart';
 import '../model/yuque_repo.dart';
 import '../service/yuque_service.dart';
@@ -38,6 +42,23 @@ class YuqueViewModel extends ChangeNotifier {
   List<YuqueDoc> get docs => List.unmodifiable(_docs);
   bool get isDocsLoading => _isDocsLoading;
   String? get docsErrorMessage => _docsErrorMessage;
+
+  // ── 批量创建状态 ─────────────────────────────────────────────────────────────
+  String _batchBookId = '';
+  String? _batchFolderPath;
+  List<MdFileItem> _scannedFiles = [];
+  List<UploadResult> _uploadResults = [];
+  bool _isBatchUploading = false;
+  int _batchUploadedCount = 0;
+  String? _batchErrorMessage;
+
+  String get batchBookId => _batchBookId;
+  String? get batchFolderPath => _batchFolderPath;
+  List<MdFileItem> get scannedFiles => List.unmodifiable(_scannedFiles);
+  List<UploadResult> get uploadResults => List.unmodifiable(_uploadResults);
+  bool get isBatchUploading => _isBatchUploading;
+  int get batchUploadedCount => _batchUploadedCount;
+  String? get batchErrorMessage => _batchErrorMessage;
 
   YuqueViewModel() {
     _loadConfig();
@@ -148,4 +169,145 @@ class YuqueViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // ── 批量创建方法 ─────────────────────────────────────────────────────────────
+
+  /// 选择本地文件夹，选中后自动扫描 .md 文件
+  Future<void> pickBatchFolder() async {
+    final result = await FilePicker.getDirectoryPath();
+    if (result == null) return;
+    _batchFolderPath = result;
+    _scannedFiles = [];
+    _uploadResults = [];
+    _batchUploadedCount = 0;
+    _batchErrorMessage = null;
+    notifyListeners();
+    await _scanFolder();
+  }
+
+  /// 递归扫描文件夹中的 .md 文件并解析 Front Matter
+  Future<void> _scanFolder() async {
+    if (_batchFolderPath == null) return;
+    final dir = Directory(_batchFolderPath!);
+    final items = <MdFileItem>[];
+    try {
+      await for (final entity in dir.list(recursive: true, followLinks: false)) {
+        if (entity is File &&
+            entity.path.toLowerCase().endsWith('.md')) {
+          final content = await entity.readAsString();
+          final name = entity.uri.pathSegments.last
+              .replaceAll(RegExp(r'\.[mM][dD]$'), '');
+          final (:slug, :title, :body) = _parseFrontMatter(content);
+          items.add(MdFileItem(
+            filePath: entity.path,
+            fileName: name,
+            slug: slug ?? name,
+            title: title ?? name,
+            body: body,
+          ));
+        }
+      }
+    } on FileSystemException catch (e) {
+      _batchErrorMessage = '读取文件夹失败：${e.message}';
+      notifyListeners();
+      return;
+    }
+    items.sort((a, b) => a.filePath.compareTo(b.filePath));
+    _scannedFiles = items;
+    notifyListeners();
+  }
+
+  /// 批量创建：逐个上传扫描到的文档，实时更新进度
+  Future<void> startBatchUpload(String bookId) async {
+    _batchBookId = bookId.trim();
+    if (_token.isEmpty) {
+      _batchErrorMessage = '请先填写并保存 API Token';
+      notifyListeners();
+      return;
+    }
+    if (_batchBookId.isEmpty) {
+      _batchErrorMessage = '请填写知识库 ID';
+      notifyListeners();
+      return;
+    }
+    final bid = int.tryParse(_batchBookId);
+    if (bid == null) {
+      _batchErrorMessage = '知识库 ID 必须为数字';
+      notifyListeners();
+      return;
+    }
+    if (_scannedFiles.isEmpty) {
+      _batchErrorMessage = '请先选择包含 .md 文件的文件夹';
+      notifyListeners();
+      return;
+    }
+    _isBatchUploading = true;
+    _uploadResults = [];
+    _batchUploadedCount = 0;
+    _batchErrorMessage = null;
+    notifyListeners();
+
+    for (final file in _scannedFiles) {
+      try {
+        final docId =
+            await _service.createDoc(_token, bid, file.slug, file.title, file.body);
+        _uploadResults = [
+          ..._uploadResults,
+          UploadResult(file: file, success: true, docId: docId),
+        ];
+      } on Exception catch (e) {
+        _uploadResults = [
+          ..._uploadResults,
+          UploadResult(
+            file: file,
+            success: false,
+            error: e.toString().replaceFirst('Exception: ', ''),
+          ),
+        ];
+      }
+      _batchUploadedCount++;
+      notifyListeners();
+    }
+
+    _isBatchUploading = false;
+    notifyListeners();
+  }
+}
+
+// ── Front Matter 解析（仅提取 slug / title，其余保留为 body）────────────────────
+
+({String? slug, String? title, String body}) _parseFrontMatter(String content) {
+  if (!content.startsWith('---')) {
+    return (slug: null, title: null, body: content);
+  }
+  final fmEnd = content.indexOf('\n---', 3);
+  if (fmEnd == -1) {
+    return (slug: null, title: null, body: content);
+  }
+  final fmBlock = content.substring(3, fmEnd);
+  String body = content.substring(fmEnd + 4);
+  if (body.startsWith('\n')) body = body.substring(1);
+
+  String? slug;
+  String? title;
+  for (final rawLine in fmBlock.split('\n')) {
+    final line = rawLine.trim();
+    if (line.isEmpty) continue;
+    final colonIdx = line.indexOf(':');
+    if (colonIdx == -1) continue;
+    final key = line.substring(0, colonIdx).trim();
+    final value = _stripFmValue(line.substring(colonIdx + 1).trim());
+    if (key == 'slug' && value.isNotEmpty) slug = value;
+    if (key == 'title' && value.isNotEmpty) title = value;
+  }
+  return (slug: slug, title: title, body: body);
+}
+
+String _stripFmValue(String s) {
+  if (s.length >= 2 &&
+      ((s.startsWith('"') && s.endsWith('"')) ||
+          (s.startsWith("'") && s.endsWith("'")))) {
+    return s.substring(1, s.length - 1);
+  }
+  return s;
 }
