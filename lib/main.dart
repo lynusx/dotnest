@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'app.dart';
+import 'layout/viewmodel/navigation_viewmodel.dart';
 
 void main() {
-  runApp(const MainApp());
-}
-
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(body: Center(child: Text('Hello World!'))),
-    );
-  }
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => NavigationViewModel())],
+      child: const DotNestApp(),
+    ),
+  );
 }
