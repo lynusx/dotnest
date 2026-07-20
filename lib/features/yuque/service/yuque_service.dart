@@ -8,13 +8,13 @@ class YuqueService {
   final Dio _dio;
 
   YuqueService()
-      : _dio = Dio(
-          BaseOptions(
-            baseUrl: _baseUrl,
-            connectTimeout: const Duration(seconds: 15),
-            receiveTimeout: const Duration(seconds: 15),
-          ),
-        );
+    : _dio = Dio(
+        BaseOptions(
+          baseUrl: _baseUrl,
+          connectTimeout: const Duration(seconds: 15),
+          receiveTimeout: const Duration(seconds: 15),
+        ),
+      );
 
   /// GET /api/v2/users/{login}/repos
   Future<List<YuqueRepo>> fetchRepos(String token, String login) async {
@@ -23,6 +23,7 @@ class YuqueService {
         '/api/v2/users/$login/repos',
         options: Options(headers: {'X-Auth-Token': token}),
       );
+
       final data = response.data['data'] as List<dynamic>;
       return data
           .map((e) => YuqueRepo.fromJson(e as Map<String, dynamic>))

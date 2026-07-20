@@ -26,4 +26,13 @@ class YuqueRepo {
       itemsCount: (json['items_count'] as num?)?.toInt() ?? 0,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'slug': slug,
+        'name': name,
+        'user_id': userId,
+        'description': description,
+        'items_count': itemsCount,
+      };
 }
