@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-enum NavPage { extract, yuque }
+enum NavPage { extract, yuqueRepos, yuqueDocs, yuqueBatchUpload, yuqueTocUpdate }
 
 const double kSidebarMinWidth = 140;
 const double kSidebarMaxWidth = 320;
@@ -11,17 +11,26 @@ extension NavPageExtension on NavPage {
     switch (this) {
       case NavPage.extract:
         return 'API 提取';
-      case NavPage.yuque:
-        return '语雀同步';
+      case NavPage.yuqueRepos:
+        return '知识库列表';
+      case NavPage.yuqueDocs:
+        return '文档列表';
+      case NavPage.yuqueBatchUpload:
+        return '批量创建';
+      case NavPage.yuqueTocUpdate:
+        return '目录更新';
     }
   }
 
-  String get iconAsset {
+  bool get isYuquePage {
     switch (this) {
+      case NavPage.yuqueRepos:
+      case NavPage.yuqueDocs:
+      case NavPage.yuqueBatchUpload:
+      case NavPage.yuqueTocUpdate:
+        return true;
       case NavPage.extract:
-        return 'code';
-      case NavPage.yuque:
-        return 'sync';
+        return false;
     }
   }
 }

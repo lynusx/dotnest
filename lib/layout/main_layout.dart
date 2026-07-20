@@ -3,7 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../core/theme/app_theme.dart';
 import '../features/extract/view/extract_page.dart';
-import '../features/yuque/view/yuque_page.dart';
+import '../features/yuque/view/repo_list_page.dart';
+import '../features/yuque/view/doc_list_page.dart';
+import '../features/yuque/view/batch_upload_page.dart';
+import '../features/yuque/view/toc_update_page.dart';
 import 'viewmodel/navigation_viewmodel.dart';
 import 'widgets/sidebar_nav_item.dart';
 
@@ -30,6 +33,7 @@ class _Sidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<NavigationViewModel>();
+    final current = vm.currentPage;
 
     return Container(
       width: vm.sidebarWidth.w,
@@ -75,18 +79,42 @@ class _Sidebar extends StatelessWidget {
 
           SizedBox(height: 12.h),
 
-          // nav items
+          // API 提取
           SidebarNavItem(
             icon: Icons.data_object_rounded,
             label: 'API 提取',
-            selected: vm.currentPage == NavPage.extract,
+            selected: current == NavPage.extract,
             onTap: () => vm.navigateTo(NavPage.extract),
           ),
+
+          // 语雀同步 group header
           SidebarNavItem(
             icon: Icons.cloud_sync_rounded,
             label: '语雀同步',
-            selected: vm.currentPage == NavPage.yuque,
-            onTap: () => vm.navigateTo(NavPage.yuque),
+            selected: current.isYuquePage,
+            onTap: () => vm.navigateTo(NavPage.yuqueRepos),
+          ),
+
+          // Yuque sub-items (always visible)
+          SidebarSubNavItem(
+            label: '知识库列表',
+            selected: current == NavPage.yuqueRepos,
+            onTap: () => vm.navigateTo(NavPage.yuqueRepos),
+          ),
+          SidebarSubNavItem(
+            label: '文档列表',
+            selected: current == NavPage.yuqueDocs,
+            onTap: () => vm.navigateTo(NavPage.yuqueDocs),
+          ),
+          SidebarSubNavItem(
+            label: '批量创建',
+            selected: current == NavPage.yuqueBatchUpload,
+            onTap: () => vm.navigateTo(NavPage.yuqueBatchUpload),
+          ),
+          SidebarSubNavItem(
+            label: '目录更新',
+            selected: current == NavPage.yuqueTocUpdate,
+            onTap: () => vm.navigateTo(NavPage.yuqueTocUpdate),
           ),
 
           const Spacer(),
@@ -121,7 +149,12 @@ class _ContentArea extends StatelessWidget {
       duration: const Duration(milliseconds: 200),
       child: switch (currentPage) {
         NavPage.extract => const ExtractPage(key: ValueKey('extract')),
-        NavPage.yuque => const YuquePage(key: ValueKey('yuque')),
+        NavPage.yuqueRepos => const RepoListPage(key: ValueKey('yuqueRepos')),
+        NavPage.yuqueDocs => const DocListPage(key: ValueKey('yuqueDocs')),
+        NavPage.yuqueBatchUpload =>
+          const BatchUploadPage(key: ValueKey('yuqueBatchUpload')),
+        NavPage.yuqueTocUpdate =>
+          const TocUpdatePage(key: ValueKey('yuqueTocUpdate')),
       },
     );
   }
