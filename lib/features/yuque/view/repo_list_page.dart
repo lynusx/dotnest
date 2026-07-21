@@ -66,8 +66,7 @@ class _ActionBar extends StatelessWidget {
             ),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.sidebarIndicator,
-              padding:
-                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.r),
               ),
@@ -104,8 +103,7 @@ class _TableBody extends StatelessWidget {
             SizedBox(height: 10.h),
             Text(
               vm.errorMessage!,
-              style:
-                  TextStyle(fontSize: 13.sp, color: AppColors.textPrimary),
+              style: TextStyle(fontSize: 13.sp, color: AppColors.textPrimary),
             ),
           ],
         ),
@@ -125,8 +123,7 @@ class _TableBody extends StatelessWidget {
             SizedBox(height: 14.h),
             Text(
               '点击「获取知识库列表」加载数据',
-              style: TextStyle(
-                  fontSize: 13.sp, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -248,9 +245,7 @@ class _TableRowState extends State<_TableRow> {
         behavior: SnackBarBehavior.floating,
         width: 300.w,
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.r),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
       ),
     );
   }
@@ -258,10 +253,7 @@ class _TableRowState extends State<_TableRow> {
   Widget _copyable(BuildContext context, String value, Widget child) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () => _copy(context, value),
-        child: child,
-      ),
+      child: GestureDetector(onTap: () => _copy(context, value), child: child),
     );
   }
 
@@ -270,8 +262,8 @@ class _TableRowState extends State<_TableRow> {
     final bg = _hovered
         ? AppColors.sidebarItemHover
         : widget.index.isEven
-            ? AppColors.cardBg
-            : AppColors.contentBg.withValues(alpha: 0.5);
+        ? AppColors.cardBg
+        : AppColors.contentBg.withValues(alpha: 0.5);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),

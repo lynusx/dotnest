@@ -91,8 +91,10 @@ class _DocActionBar extends StatelessWidget {
                   fontSize: 12.sp,
                   color: AppColors.textSecondary,
                 ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 10.w,
+                  vertical: 8.h,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                   borderSide: BorderSide(
@@ -138,8 +140,7 @@ class _DocActionBar extends StatelessWidget {
             ),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.sidebarIndicator,
-              padding:
-                  EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.r),
               ),
@@ -167,13 +168,16 @@ class _DocTableBody extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded,
-                size: 36.sp,
-                color: Colors.redAccent.withValues(alpha: 0.7)),
+            Icon(
+              Icons.error_outline_rounded,
+              size: 36.sp,
+              color: Colors.redAccent.withValues(alpha: 0.7),
+            ),
             SizedBox(height: 10.h),
-            Text(vm.docsErrorMessage!,
-                style: TextStyle(
-                    fontSize: 13.sp, color: AppColors.textPrimary)),
+            Text(
+              vm.docsErrorMessage!,
+              style: TextStyle(fontSize: 13.sp, color: AppColors.textPrimary),
+            ),
           ],
         ),
       );
@@ -183,13 +187,16 @@ class _DocTableBody extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.article_outlined,
-                size: 44.sp,
-                color: AppColors.sidebarIndicator.withValues(alpha: 0.35)),
+            Icon(
+              Icons.article_outlined,
+              size: 44.sp,
+              color: AppColors.sidebarIndicator.withValues(alpha: 0.35),
+            ),
             SizedBox(height: 14.h),
-            Text('输入知识库 ID 后点击「获取文档列表」',
-                style: TextStyle(
-                    fontSize: 13.sp, color: AppColors.textSecondary)),
+            Text(
+              '输入知识库 ID 后点击「获取文档列表」',
+              style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
+            ),
           ],
         ),
       );
@@ -213,16 +220,18 @@ class _DocTableBody extends StatelessWidget {
           children: [
             _DocTableHeader(),
             Divider(
-                height: 1,
-                thickness: 1,
-                color: Colors.black.withValues(alpha: 0.06)),
+              height: 1,
+              thickness: 1,
+              color: Colors.black.withValues(alpha: 0.06),
+            ),
             Expanded(
               child: ListView.separated(
                 itemCount: vm.docs.length,
                 separatorBuilder: (_, _) => Divider(
-                    height: 1,
-                    thickness: 1,
-                    color: Colors.black.withValues(alpha: 0.04)),
+                  height: 1,
+                  thickness: 1,
+                  color: Colors.black.withValues(alpha: 0.04),
+                ),
                 itemBuilder: (context, index) =>
                     _DocTableRow(doc: vm.docs[index], index: index),
               ),
@@ -307,9 +316,7 @@ class _DocTableRowState extends State<_DocTableRow> {
         behavior: SnackBarBehavior.floating,
         width: 300.w,
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.r),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
       ),
     );
   }
@@ -317,10 +324,7 @@ class _DocTableRowState extends State<_DocTableRow> {
   Widget _copyable(BuildContext context, String value, Widget child) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () => _copy(context, value),
-        child: child,
-      ),
+      child: GestureDetector(onTap: () => _copy(context, value), child: child),
     );
   }
 
@@ -329,8 +333,8 @@ class _DocTableRowState extends State<_DocTableRow> {
     final bg = _hovered
         ? AppColors.sidebarItemHover
         : widget.index.isEven
-            ? AppColors.cardBg
-            : AppColors.contentBg.withValues(alpha: 0.5);
+        ? AppColors.cardBg
+        : AppColors.contentBg.withValues(alpha: 0.5);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -394,4 +398,3 @@ class _DocTableRowState extends State<_DocTableRow> {
     );
   }
 }
-

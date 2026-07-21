@@ -1,10 +1,14 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
-enum NavPage { extract, yuqueRepos, yuqueDocs, yuqueBatchUpload, yuqueTocUpdate }
+enum NavPage { extract, yuqueRepos, yuqueDocs, yuqueBatchUpload, yuqueTocUpdate, settings }
 
-const double kSidebarMinWidth = 140;
-const double kSidebarMaxWidth = 320;
-const double kSidebarDefaultWidth = 200;
+const List<NavPage> kNavPageOrder = [
+  NavPage.extract,
+  NavPage.yuqueRepos,
+  NavPage.yuqueDocs,
+  NavPage.yuqueBatchUpload,
+  NavPage.yuqueTocUpdate,
+];
 
 extension NavPageExtension on NavPage {
   String get label {
@@ -12,13 +16,32 @@ extension NavPageExtension on NavPage {
       case NavPage.extract:
         return 'API 提取';
       case NavPage.yuqueRepos:
-        return '知识库列表';
+        return '知识库';
       case NavPage.yuqueDocs:
         return '文档列表';
       case NavPage.yuqueBatchUpload:
         return '批量创建';
       case NavPage.yuqueTocUpdate:
         return '目录更新';
+      case NavPage.settings:
+        return '设置';
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case NavPage.extract:
+        return Icons.data_object_rounded;
+      case NavPage.yuqueRepos:
+        return Icons.folder_outlined;
+      case NavPage.yuqueDocs:
+        return Icons.description_outlined;
+      case NavPage.yuqueBatchUpload:
+        return Icons.upload_file_outlined;
+      case NavPage.yuqueTocUpdate:
+        return Icons.account_tree_outlined;
+      case NavPage.settings:
+        return Icons.settings_outlined;
     }
   }
 
@@ -30,6 +53,7 @@ extension NavPageExtension on NavPage {
       case NavPage.yuqueTocUpdate:
         return true;
       case NavPage.extract:
+      case NavPage.settings:
         return false;
     }
   }
@@ -37,21 +61,26 @@ extension NavPageExtension on NavPage {
 
 class NavigationViewModel extends ChangeNotifier {
   NavPage _currentPage = NavPage.extract;
-  double _sidebarWidth = kSidebarDefaultWidth;
+  // tracks the last non-settings page so NavigationRail always has a valid index
+  NavPage _lastContentPage = NavPage.extract;
 
   NavPage get currentPage => _currentPage;
-  double get sidebarWidth => _sidebarWidth;
+
+  /// Index for NavigationRail — always valid, holds the last content page
+  /// even when the user is on the Settings screen.
+  int get selectedIndex => kNavPageOrder.indexOf(_lastContentPage);
 
   void navigateTo(NavPage page) {
     if (_currentPage == page) return;
+    if (page != NavPage.settings) {
+      _lastContentPage = page;
+    }
     _currentPage = page;
     notifyListeners();
   }
 
-  void setSidebarWidth(double width) {
-    final clamped = width.clamp(kSidebarMinWidth, kSidebarMaxWidth);
-    if (_sidebarWidth == clamped) return;
-    _sidebarWidth = clamped;
-    notifyListeners();
+  void navigateToIndex(int index) {
+    if (index < 0 || index >= kNavPageOrder.length) return;
+    navigateTo(kNavPageOrder[index]);
   }
 }

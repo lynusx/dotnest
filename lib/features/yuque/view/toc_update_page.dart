@@ -75,8 +75,11 @@ class _TocActionBar extends StatelessWidget {
         children: [
           // 文件名展示
           if (hasFile) ...[
-            Icon(Icons.description_outlined,
-                size: 14.sp, color: AppColors.sidebarIndicator),
+            Icon(
+              Icons.description_outlined,
+              size: 14.sp,
+              color: AppColors.sidebarIndicator,
+            ),
             SizedBox(width: 6.w),
             Flexible(
               child: Text(
@@ -127,8 +130,7 @@ class _TocActionBar extends StatelessWidget {
               onPressed: isUpdating ? null : vm.clearTocFile,
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.textSecondary,
-                padding:
-                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
               ),
               child: Text('清除', style: TextStyle(fontSize: 13.sp)),
             ),
@@ -139,28 +141,35 @@ class _TocActionBar extends StatelessWidget {
             width: 160.w,
             child: TextField(
               controller: bookIdCtrl,
-              style:
-                  TextStyle(fontSize: 13.sp, color: AppColors.textPrimary),
+              style: TextStyle(fontSize: 13.sp, color: AppColors.textPrimary),
               decoration: InputDecoration(
                 hintText: '知识库 ID',
                 hintStyle: TextStyle(
-                    fontSize: 12.sp, color: AppColors.textSecondary),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                  fontSize: 12.sp,
+                  color: AppColors.textSecondary,
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 10.w,
+                  vertical: 8.h,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                   borderSide: BorderSide(
-                      color: Colors.black.withValues(alpha: 0.12)),
+                    color: Colors.black.withValues(alpha: 0.12),
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                   borderSide: BorderSide(
-                      color: Colors.black.withValues(alpha: 0.12)),
+                    color: Colors.black.withValues(alpha: 0.12),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                   borderSide: BorderSide(
-                      color: AppColors.sidebarIndicator, width: 1.5),
+                    color: AppColors.sidebarIndicator,
+                    width: 1.5,
+                  ),
                 ),
                 filled: true,
                 fillColor: AppColors.contentBg,
@@ -189,10 +198,10 @@ class _TocActionBar extends StatelessWidget {
             ),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.sidebarIndicator,
-              disabledBackgroundColor:
-                  AppColors.sidebarIndicator.withValues(alpha: 0.4),
-              padding:
-                  EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+              disabledBackgroundColor: AppColors.sidebarIndicator.withValues(
+                alpha: 0.4,
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.r),
               ),
@@ -222,13 +231,17 @@ class _ErrorBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline_rounded,
-              size: 15.sp, color: Colors.red.shade500),
+          Icon(
+            Icons.error_outline_rounded,
+            size: 15.sp,
+            color: Colors.red.shade500,
+          ),
           SizedBox(width: 8.w),
           Expanded(
-            child: Text(message,
-                style: TextStyle(
-                    fontSize: 13.sp, color: Colors.red.shade700)),
+            child: Text(
+              message,
+              style: TextStyle(fontSize: 13.sp, color: Colors.red.shade700),
+            ),
           ),
         ],
       ),
@@ -251,13 +264,15 @@ class _SuccessBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.check_circle_outline,
-              size: 15.sp, color: Colors.green.shade600),
+          Icon(
+            Icons.check_circle_outline,
+            size: 15.sp,
+            color: Colors.green.shade600,
+          ),
           SizedBox(width: 8.w),
           Text(
             '目录更新成功',
-            style:
-                TextStyle(fontSize: 13.sp, color: Colors.green.shade700),
+            style: TextStyle(fontSize: 13.sp, color: Colors.green.shade700),
           ),
         ],
       ),
@@ -284,8 +299,7 @@ class _TocEmptyState extends StatelessWidget {
           SizedBox(height: 14.h),
           Text(
             '选择一个 .md 文件，将其内容作为目录提交',
-            style: TextStyle(
-                fontSize: 13.sp, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -321,8 +335,7 @@ class _TocPreviewBody extends StatelessWidget {
           children: [
             Container(
               color: AppColors.contentBg,
-              padding:
-                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
               child: Text(
                 '文件内容预览',
                 style: TextStyle(
@@ -333,9 +346,10 @@ class _TocPreviewBody extends StatelessWidget {
               ),
             ),
             Divider(
-                height: 1,
-                thickness: 1,
-                color: Colors.black.withValues(alpha: 0.06)),
+              height: 1,
+              thickness: 1,
+              color: Colors.black.withValues(alpha: 0.06),
+            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.all(16.r),

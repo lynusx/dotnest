@@ -85,9 +85,7 @@ class _BatchActionBar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.contentBg,
                 borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(
-                  color: Colors.black.withValues(alpha: 0.12),
-                ),
+                border: Border.all(color: Colors.black.withValues(alpha: 0.12)),
               ),
               alignment: Alignment.centerLeft,
               child: Text(
@@ -133,17 +131,21 @@ class _BatchActionBar extends StatelessWidget {
                   fontSize: 12.sp,
                   color: AppColors.textSecondary,
                 ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 10.w,
+                  vertical: 8.h,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
-                  borderSide:
-                      BorderSide(color: Colors.black.withValues(alpha: 0.12)),
+                  borderSide: BorderSide(
+                    color: Colors.black.withValues(alpha: 0.12),
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
-                  borderSide:
-                      BorderSide(color: Colors.black.withValues(alpha: 0.12)),
+                  borderSide: BorderSide(
+                    color: Colors.black.withValues(alpha: 0.12),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
@@ -181,8 +183,9 @@ class _BatchActionBar extends StatelessWidget {
             ),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.sidebarIndicator,
-              disabledBackgroundColor:
-                  AppColors.sidebarIndicator.withValues(alpha: 0.4),
+              disabledBackgroundColor: AppColors.sidebarIndicator.withValues(
+                alpha: 0.4,
+              ),
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.r),
@@ -209,13 +212,16 @@ class _BatchContentBody extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded,
-                size: 36.sp,
-                color: Colors.redAccent.withValues(alpha: 0.7)),
+            Icon(
+              Icons.error_outline_rounded,
+              size: 36.sp,
+              color: Colors.redAccent.withValues(alpha: 0.7),
+            ),
             SizedBox(height: 10.h),
-            Text(vm.batchErrorMessage!,
-                style:
-                    TextStyle(fontSize: 13.sp, color: AppColors.textPrimary)),
+            Text(
+              vm.batchErrorMessage!,
+              style: TextStyle(fontSize: 13.sp, color: AppColors.textPrimary),
+            ),
           ],
         ),
       );
@@ -227,13 +233,16 @@ class _BatchContentBody extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.upload_file_outlined,
-                size: 44.sp,
-                color: AppColors.sidebarIndicator.withValues(alpha: 0.35)),
+            Icon(
+              Icons.upload_file_outlined,
+              size: 44.sp,
+              color: AppColors.sidebarIndicator.withValues(alpha: 0.35),
+            ),
             SizedBox(height: 14.h),
-            Text('选择文件夹后将自动扫描其中的 .md 文件',
-                style: TextStyle(
-                    fontSize: 13.sp, color: AppColors.textSecondary)),
+            Text(
+              '选择文件夹后将自动扫描其中的 .md 文件',
+              style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
+            ),
           ],
         ),
       );
@@ -276,16 +285,18 @@ class _ScanPreviewTable extends StatelessWidget {
           children: [
             _ScanPreviewHeader(count: vm.scannedFiles.length),
             Divider(
-                height: 1,
-                thickness: 1,
-                color: Colors.black.withValues(alpha: 0.06)),
+              height: 1,
+              thickness: 1,
+              color: Colors.black.withValues(alpha: 0.06),
+            ),
             Expanded(
               child: ListView.separated(
                 itemCount: vm.scannedFiles.length,
                 separatorBuilder: (_, _) => Divider(
-                    height: 1,
-                    thickness: 1,
-                    color: Colors.black.withValues(alpha: 0.04)),
+                  height: 1,
+                  thickness: 1,
+                  color: Colors.black.withValues(alpha: 0.04),
+                ),
                 itemBuilder: (context, index) =>
                     _ScanPreviewRow(file: vm.scannedFiles[index], index: index),
               ),
@@ -308,24 +319,14 @@ class _ScanPreviewHeader extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       child: Row(
         children: [
-          Expanded(
-            flex: 3,
-            child: _headerCell('文件名'),
-          ),
-          Expanded(
-            flex: 3,
-            child: _headerCell('slug'),
-          ),
-          Expanded(
-            flex: 4,
-            child: _headerCell('title'),
-          ),
+          Expanded(flex: 3, child: _headerCell('文件名')),
+          Expanded(flex: 3, child: _headerCell('slug')),
+          Expanded(flex: 4, child: _headerCell('title')),
           SizedBox(
             width: 80.w,
             child: Text(
               '共 $count 个文件',
-              style: TextStyle(
-                  fontSize: 11.sp, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 11.sp, color: AppColors.textSecondary),
               textAlign: TextAlign.right,
             ),
           ),
@@ -363,8 +364,8 @@ class _ScanPreviewRowState extends State<_ScanPreviewRow> {
     final bg = _hovered
         ? AppColors.sidebarItemHover
         : widget.index.isEven
-            ? AppColors.cardBg
-            : AppColors.contentBg.withValues(alpha: 0.5);
+        ? AppColors.cardBg
+        : AppColors.contentBg.withValues(alpha: 0.5);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -381,8 +382,7 @@ class _ScanPreviewRowState extends State<_ScanPreviewRow> {
                 widget.file.fileName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: 13.sp, color: AppColors.textPrimary),
+                style: TextStyle(fontSize: 13.sp, color: AppColors.textPrimary),
               ),
             ),
             Expanded(
@@ -392,7 +392,9 @@ class _ScanPreviewRowState extends State<_ScanPreviewRow> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    fontSize: 12.sp, color: AppColors.textSecondary),
+                  fontSize: 12.sp,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
             Expanded(
@@ -401,8 +403,7 @@ class _ScanPreviewRowState extends State<_ScanPreviewRow> {
                 widget.file.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: 12.sp, color: AppColors.textPrimary),
+                style: TextStyle(fontSize: 12.sp, color: AppColors.textPrimary),
               ),
             ),
             SizedBox(width: 80.w),
@@ -423,8 +424,7 @@ class _UploadResultTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final total = vm.scannedFiles.length;
     final doneCount = vm.uploadResults.length;
-    final successCount =
-        vm.uploadResults.where((r) => r.success).length;
+    final successCount = vm.uploadResults.where((r) => r.success).length;
     final failCount = doneCount - successCount;
 
     return Padding(
@@ -452,23 +452,25 @@ class _UploadResultTable extends StatelessWidget {
               isUploading: vm.isBatchUploading,
             ),
             Divider(
-                height: 1,
-                thickness: 1,
-                color: Colors.black.withValues(alpha: 0.06)),
+              height: 1,
+              thickness: 1,
+              color: Colors.black.withValues(alpha: 0.06),
+            ),
             Expanded(
               child: ListView.separated(
                 itemCount: total,
                 separatorBuilder: (_, _) => Divider(
-                    height: 1,
-                    thickness: 1,
-                    color: Colors.black.withValues(alpha: 0.04)),
+                  height: 1,
+                  thickness: 1,
+                  color: Colors.black.withValues(alpha: 0.04),
+                ),
                 itemBuilder: (context, index) {
                   final file = vm.scannedFiles[index];
                   final result = index < vm.uploadResults.length
                       ? vm.uploadResults[index]
                       : null;
-                  final isCurrent = vm.isBatchUploading &&
-                      index == vm.uploadResults.length;
+                  final isCurrent =
+                      vm.isBatchUploading && index == vm.uploadResults.length;
                   return _UploadResultRow(
                     file: file,
                     result: result,
@@ -515,27 +517,43 @@ class _UploadResultHeader extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 if (success > 0) ...[
-                  Icon(Icons.check_circle_outline,
-                      size: 12.sp, color: Colors.green.shade600),
+                  Icon(
+                    Icons.check_circle_outline,
+                    size: 12.sp,
+                    color: Colors.green.shade600,
+                  ),
                   SizedBox(width: 3.w),
-                  Text('$success',
-                      style: TextStyle(
-                          fontSize: 11.sp, color: Colors.green.shade600)),
+                  Text(
+                    '$success',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: Colors.green.shade600,
+                    ),
+                  ),
                   SizedBox(width: 8.w),
                 ],
                 if (fail > 0) ...[
-                  Icon(Icons.cancel_outlined,
-                      size: 12.sp, color: Colors.red.shade400),
+                  Icon(
+                    Icons.cancel_outlined,
+                    size: 12.sp,
+                    color: Colors.red.shade400,
+                  ),
                   SizedBox(width: 3.w),
-                  Text('$fail',
-                      style: TextStyle(
-                          fontSize: 11.sp, color: Colors.red.shade400)),
+                  Text(
+                    '$fail',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: Colors.red.shade400,
+                    ),
+                  ),
                   SizedBox(width: 8.w),
                 ],
                 Text(
                   isUploading ? '$done / $total' : '共 $total',
                   style: TextStyle(
-                      fontSize: 11.sp, color: AppColors.textSecondary),
+                    fontSize: 11.sp,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -582,8 +600,8 @@ class _UploadResultRowState extends State<_UploadResultRow> {
     final bg = _hovered
         ? AppColors.sidebarItemHover
         : widget.index.isEven
-            ? AppColors.cardBg
-            : AppColors.contentBg.withValues(alpha: 0.5);
+        ? AppColors.cardBg
+        : AppColors.contentBg.withValues(alpha: 0.5);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -600,8 +618,7 @@ class _UploadResultRowState extends State<_UploadResultRow> {
                 widget.file.fileName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: 13.sp, color: AppColors.textPrimary),
+                style: TextStyle(fontSize: 13.sp, color: AppColors.textPrimary),
               ),
             ),
             Expanded(
@@ -611,15 +628,14 @@ class _UploadResultRowState extends State<_UploadResultRow> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    fontSize: 12.sp, color: AppColors.textSecondary),
+                  fontSize: 12.sp,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
             Expanded(
               flex: 3,
-              child: _StatusCell(
-                result: result,
-                isCurrent: widget.isCurrent,
-              ),
+              child: _StatusCell(result: result, isCurrent: widget.isCurrent),
             ),
             SizedBox(width: 160.w),
           ],
@@ -648,9 +664,13 @@ class _StatusCell extends StatelessWidget {
             ),
           ),
           SizedBox(width: 6.w),
-          Text('上传中...',
-              style: TextStyle(
-                  fontSize: 12.sp, color: AppColors.sidebarIndicator)),
+          Text(
+            '上传中...',
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: AppColors.sidebarIndicator,
+            ),
+          ),
         ],
       );
     }
@@ -664,29 +684,29 @@ class _StatusCell extends StatelessWidget {
     if (r.success) {
       return Row(
         children: [
-          Icon(Icons.check_circle_outline,
-              size: 13.sp, color: Colors.green.shade600),
+          Icon(
+            Icons.check_circle_outline,
+            size: 13.sp,
+            color: Colors.green.shade600,
+          ),
           SizedBox(width: 5.w),
           Text(
             '成功',
-            style: TextStyle(
-                fontSize: 12.sp, color: Colors.green.shade600),
+            style: TextStyle(fontSize: 12.sp, color: Colors.green.shade600),
           ),
         ],
       );
     }
     return Row(
       children: [
-        Icon(Icons.cancel_outlined,
-            size: 13.sp, color: Colors.red.shade400),
+        Icon(Icons.cancel_outlined, size: 13.sp, color: Colors.red.shade400),
         SizedBox(width: 5.w),
         Expanded(
           child: Text(
             r.error ?? '失败',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style:
-                TextStyle(fontSize: 12.sp, color: Colors.red.shade400),
+            style: TextStyle(fontSize: 12.sp, color: Colors.red.shade400),
           ),
         ),
       ],
