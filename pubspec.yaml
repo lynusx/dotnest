@@ -17,8 +17,6 @@ dependencies:
   dio: ^5.10.0
   retrofit: ^4.9.2
   json_annotation: ^4.12.0
-  # dart解析
-  analyzer: '>=10.0.0 <14.0.0'
   # 路由
   go_router: ^17.3.0
   # 存储
@@ -26,6 +24,8 @@ dependencies:
   path_provider: ^2.1.6
   # 工具
   file_picker: ^11.0.2
+  # Dart 源码分析
+  analyzer: ^13.0.0
 
 dev_dependencies:
   flutter_test:

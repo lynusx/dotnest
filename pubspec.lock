@@ -292,10 +292,10 @@ packages:
     dependency: "direct dev"
     description:
       name: go_router_builder
-      sha256: d67db3885eb0255e3782369c265be2d56050481ad9e56eec010cbffd7bf53ae2
+      sha256: "53253ae5bd3d3bfc38c5488ca844f6b054c4b905683667db4544e7ab995fddcc"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "4.3.1"
+    version: "4.4.0"
   graphs:
     dependency: transitive
     description:
@@ -604,10 +604,10 @@ packages:
     dependency: "direct dev"
     description:
       name: retrofit_generator
-      sha256: "0c6468f776e449de3886b0d68fa668943e005d884e618487fdf8b1323becdf88"
+      sha256: e836270d06083ff3e90a0428732c750ed4a7ef2e99ff26d1af9865a3aa20968a
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "10.2.7"
+    version: "10.2.8"
   shared_preferences:
     dependency: "direct main"
     description:

@@ -11,6 +11,7 @@
 
 - **UI 组件**：统一使用 Flutter SDK 内置的 Material 组件库（即 `import 'package:flutter/material.dart'`），不混用 Cupertino 风格或引入其他 UI 组件库，保证界面风格统一。注意这是 Flutter 内置库，而非需要在 `pubspec.yaml` 中单独声明的第三方包。
 - **第三方依赖**：`pubspec.yaml` 中已预置当前阶段可能用到的依赖包，实现功能时请优先复用现有依赖。如确需引入新包，须先说明引入理由（用途、备选方案、包名与版本）并征得用户确认后再添加，不得擅自引入。
+- **词法分析**: 分析dart代码使用analyzer包，严禁使用正则表达式，包文档链接：https://pub.dev/documentation/analyzer/13.0.0
 
 ## 架构约定：MVVM
 
