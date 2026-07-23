@@ -159,41 +159,52 @@ class DartAnalyzerService {
   List<_ApiInfo> _extractApis(CompilationUnitMember declaration) {
     switch (declaration) {
       case ClassDeclaration():
+        final nameWithTypeParams = declaration.namePart.toSource();
         return _classLikeApi(
           name: declaration.namePart.typeName.lexeme,
           type: ApiType.classType,
           docComment: declaration.documentationComment,
           members: declaration.body.members,
+          nameWithTypeParams: nameWithTypeParams,
         );
       case MixinDeclaration():
+        final nameWithTypeParams =
+            declaration.name.lexeme +
+            (declaration.typeParameters?.toSource() ?? '');
         return _classLikeApi(
           name: declaration.name.lexeme,
           type: ApiType.mixin,
           docComment: declaration.documentationComment,
           members: declaration.body.members,
+          nameWithTypeParams: nameWithTypeParams,
         );
       case EnumDeclaration():
         return _enumApi(declaration);
       case ExtensionDeclaration():
         final nameToken = declaration.name;
         if (nameToken == null) return const [];
+        final nameWithTypeParams =
+            nameToken.lexeme + (declaration.typeParameters?.toSource() ?? '');
         return _classLikeApi(
           name: nameToken.lexeme,
           type: ApiType.extension,
           docComment: declaration.documentationComment,
           members: declaration.body.members,
+          nameWithTypeParams: nameWithTypeParams,
         );
       case TypeAlias():
         return _leafApi(
           name: declaration.name.lexeme,
           type: ApiType.typedef,
           docComment: declaration.documentationComment,
+          signature: _typedefSignature(declaration),
         );
       case FunctionDeclaration():
         return _leafApi(
           name: declaration.name.lexeme,
           type: ApiType.function,
           docComment: declaration.documentationComment,
+          signature: _functionSignature(declaration),
         );
       case TopLevelVariableDeclaration():
         return _topLevelVariableApis(declaration);
@@ -206,20 +217,7 @@ class DartAnalyzerService {
     required String name,
     required ApiType type,
     required Comment? docComment,
-  }) {
-    if (name.startsWith('_')) return const [];
-    final doc = _docText(docComment);
-    if (doc == null) return const [];
-    return [
-      _ApiInfo(name: name, type: type, docComment: doc, members: const []),
-    ];
-  }
-
-  List<_ApiInfo> _classLikeApi({
-    required String name,
-    required ApiType type,
-    required Comment? docComment,
-    required NodeList<ClassMember> members,
+    String? signature,
   }) {
     if (name.startsWith('_')) return const [];
     final doc = _docText(docComment);
@@ -229,7 +227,28 @@ class DartAnalyzerService {
         name: name,
         type: type,
         docComment: doc,
-        members: _extractMembers(members),
+        members: const [],
+        signature: signature,
+      ),
+    ];
+  }
+
+  List<_ApiInfo> _classLikeApi({
+    required String name,
+    required ApiType type,
+    required Comment? docComment,
+    required NodeList<ClassMember> members,
+    required String nameWithTypeParams,
+  }) {
+    if (name.startsWith('_')) return const [];
+    final doc = _docText(docComment);
+    if (doc == null) return const [];
+    return [
+      _ApiInfo(
+        name: name,
+        type: type,
+        docComment: doc,
+        members: _extractMembers(members, nameWithTypeParams),
       ),
     ];
   }
@@ -239,6 +258,7 @@ class DartAnalyzerService {
     if (name.startsWith('_')) return const [];
     final doc = _docText(declaration.documentationComment);
     if (doc == null) return const [];
+    final nameWithTypeParams = declaration.namePart.toSource();
 
     final members = <_MemberInfo>[];
     for (final constant in declaration.body.constants) {
@@ -253,7 +273,7 @@ class DartAnalyzerService {
         ),
       );
     }
-    members.addAll(_extractMembers(declaration.body.members));
+    members.addAll(_extractMembers(declaration.body.members, nameWithTypeParams));
 
     return [
       _ApiInfo(
@@ -288,7 +308,10 @@ class DartAnalyzerService {
 
   // ── 成员提取（类型判断，非文本匹配） ─────────────────────────────────────────
 
-  List<_MemberInfo> _extractMembers(NodeList<ClassMember> members) {
+  List<_MemberInfo> _extractMembers(
+    NodeList<ClassMember> members,
+    String nameWithTypeParams,
+  ) {
     final out = <_MemberInfo>[];
     for (final member in members) {
       switch (member) {
@@ -301,12 +324,14 @@ class DartAnalyzerService {
               category: MemberCategory.constructors,
               docComment: doc,
               isOverride: false,
+              signature: _constructorSignature(member, nameWithTypeParams),
             ),
           );
         case MethodDeclaration():
           if (member.name.lexeme.startsWith('_')) break;
           final doc = _docText(member.documentationComment);
           if (doc == null) break;
+          final isAccessor = member.isGetter || member.isSetter;
           out.add(
             _MemberInfo(
               name: member.name.lexeme,
@@ -314,6 +339,7 @@ class DartAnalyzerService {
               docComment: doc,
               isOverride: _hasOverride(member.metadata),
               readWriteStatus: member.isGetter ? 'no setter' : null,
+              signature: isAccessor ? null : _methodSignature(member),
             ),
           );
         case FieldDeclaration():
@@ -488,6 +514,57 @@ class DartAnalyzerService {
     return out.join('\n');
   }
 
+  // ── 签名拼接（AST 节点手动拼接，不用整节点 toSource） ─────────────────────────
+
+  /// 构造函数签名：不含 `factory` 关键字，不含重定向目标，不含分号
+  String _constructorSignature(
+    ConstructorDeclaration ctor,
+    String nameWithTypeParams,
+  ) {
+    final buf = StringBuffer();
+    if (ctor.constKeyword != null) buf.write('const ');
+    buf.write(nameWithTypeParams);
+    final ctorName = ctor.name?.lexeme;
+    if (ctorName != null) buf.write('.$ctorName');
+    buf.write(ctor.parameters.toSource());
+    return buf.toString();
+  }
+
+  /// 方法签名：不含 `static`/`abstract`，操作符保留 `operator` 关键字
+  String _methodSignature(MethodDeclaration method) {
+    final buf = StringBuffer();
+    final returnType = method.returnType?.toSource();
+    if (returnType != null && returnType.isNotEmpty) {
+      buf.write(returnType);
+      buf.write(' ');
+    }
+    if (method.isOperator) buf.write('operator ');
+    buf.write(method.name.lexeme);
+    buf.write(method.parameters?.toSource() ?? '()');
+    return buf.toString();
+  }
+
+  /// typedef 声明：整节点 toSource() 去掉结尾分号
+  String _typedefSignature(TypeAlias typeAlias) {
+    final source = typeAlias.toSource();
+    return source.endsWith(';')
+        ? source.substring(0, source.length - 1)
+        : source;
+  }
+
+  /// 顶层函数签名：不含函数体
+  String _functionSignature(FunctionDeclaration func) {
+    final buf = StringBuffer();
+    final returnType = func.returnType?.toSource();
+    if (returnType != null && returnType.isNotEmpty) {
+      buf.write(returnType);
+      buf.write(' ');
+    }
+    buf.write(func.name.lexeme);
+    buf.write(func.functionExpression.parameters?.toSource() ?? '()');
+    return buf.toString();
+  }
+
   /// dartdoc 模板标签行，如 `{@tool dartpad}`、`{@end-tool}`、`{@macro foo}`
   bool _isTemplateTagLine(String trimmed) =>
       trimmed.startsWith('{@') && trimmed.endsWith('}');
@@ -509,6 +586,12 @@ class DartAnalyzerService {
     buf.writeln('slug: ${api.name}-${api.type.keyword}');
     buf.writeln('---');
     buf.writeln();
+    if (api.signature != null) {
+      buf.writeln('```dart');
+      buf.writeln(api.signature);
+      buf.writeln('```');
+      buf.writeln();
+    }
     buf.writeln(api.docComment);
     buf.writeln();
 
@@ -539,6 +622,13 @@ class DartAnalyzerService {
       buf.writeln();
       for (final m in list) {
         buf.writeln('### ${m.name}');
+        if (m.signature != null) {
+          buf.writeln();
+          buf.writeln('```dart');
+          buf.writeln(m.signature);
+          buf.writeln('```');
+          buf.writeln();
+        }
         if (m.isOverride) buf.writeln('override');
         if (m.readWriteStatus != null) buf.writeln(m.readWriteStatus);
         if (m.docComment.isNotEmpty) buf.writeln(m.docComment);
@@ -603,11 +693,13 @@ class _ApiInfo {
   final ApiType type;
   final String docComment;
   final List<_MemberInfo> members;
+  final String? signature;
   const _ApiInfo({
     required this.name,
     required this.type,
     required this.docComment,
     required this.members,
+    this.signature,
   });
 }
 
@@ -617,6 +709,7 @@ class _MemberInfo {
   final String docComment;
   final bool isOverride;
   final String? readWriteStatus;
+  final String? signature;
 
   const _MemberInfo({
     required this.name,
@@ -624,6 +717,7 @@ class _MemberInfo {
     required this.docComment,
     required this.isOverride,
     this.readWriteStatus,
+    this.signature,
   });
 
   _MemberInfo withReadWrite(String status) => _MemberInfo(
@@ -632,6 +726,7 @@ class _MemberInfo {
     docComment: docComment,
     isOverride: isOverride,
     readWriteStatus: status,
+    signature: signature,
   );
 }
 
