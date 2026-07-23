@@ -439,7 +439,9 @@ class DartAnalyzerService {
     return s;
   }
 
-  /// 将同一段落内的多行合并为一行（保留空行分段与围栏代码块内的原始换行/缩进）
+  /// 将同一段落内的多行合并为一行；保留空行分段、围栏代码块内的原始换行/缩进，
+  /// 并正确处理 Markdown 列表项（`*`/`-` 统一转为 `-`，每项独占一行）与
+  /// dartdoc 模板标签行（如 `{@tool ...}`/`{@end-tool}`，独占一行不参与合并）
   String _joinDocLines(List<String> rawLines) {
     final out = <String>[];
     var inFence = false;
@@ -469,10 +471,32 @@ class DartAnalyzerService {
         out.add('');
         continue;
       }
+      if (_isTemplateTagLine(trimmed)) {
+        flushParagraph();
+        out.add(trimmed);
+        continue;
+      }
+      final listItemText = _stripListMarker(trimmed);
+      if (listItemText != null) {
+        flushParagraph();
+        paragraph = '- $listItemText';
+        continue;
+      }
       paragraph = paragraph == null ? trimmed : '$paragraph $trimmed';
     }
     flushParagraph();
     return out.join('\n');
+  }
+
+  /// dartdoc 模板标签行，如 `{@tool dartpad}`、`{@end-tool}`、`{@macro foo}`
+  bool _isTemplateTagLine(String trimmed) =>
+      trimmed.startsWith('{@') && trimmed.endsWith('}');
+
+  /// 若 [trimmed] 是 `*`/`-` 加空格开头的 Markdown 列表项，返回去掉标记后的正文
+  String? _stripListMarker(String trimmed) {
+    if (trimmed.startsWith('* ')) return trimmed.substring(2);
+    if (trimmed.startsWith('- ')) return trimmed.substring(2);
+    return null;
   }
 
   // ── Markdown 生成 ───────────────────────────────────────────────────────────
@@ -549,13 +573,13 @@ class DartAnalyzerService {
   }
 
   String _categoryTitle(MemberCategory cat) => switch (cat) {
-    MemberCategory.enumValues => 'Values',
-    MemberCategory.constructors => 'Constructors',
-    MemberCategory.staticProperties => 'Static Properties',
-    MemberCategory.staticMethods => 'Static Methods',
-    MemberCategory.instanceProperties => 'Instance Properties',
-    MemberCategory.instanceMethods => 'Instance Methods',
-    MemberCategory.operators => 'Operators',
+    MemberCategory.enumValues => '枚举值',
+    MemberCategory.constructors => '构造函数',
+    MemberCategory.staticProperties => '静态属性',
+    MemberCategory.staticMethods => '静态方法',
+    MemberCategory.instanceProperties => '实例属性',
+    MemberCategory.instanceMethods => '实例方法',
+    MemberCategory.operators => '操作符',
   };
 
   // ── 文件名唯一化 ─────────────────────────────────────────────────────────────
