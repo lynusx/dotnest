@@ -25,7 +25,8 @@ enum ApiType {
   extension('extension'),
   typedef('typedef'),
   function('function'),
-  variable('variable');
+  variable('variable'),
+  library('library');
 
   final String keyword;
   const ApiType(this.keyword);

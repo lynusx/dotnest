@@ -112,7 +112,46 @@ class DartAnalyzerService {
         );
       }
     }
+
+    if (results.isEmpty) {
+      final libraryDoc = _extractLibraryDoc(unit);
+      if (libraryDoc != null) {
+        final baseName = _baseName(sourcePath);
+        final fileName = _uniqueFileName(baseName, usedFileNames);
+        results.add(
+          _ExtractResultInternal(
+            ExtractResult(
+              apiName: baseName,
+              fileName: fileName,
+              apiType: ApiType.library,
+              sourcePath: sourcePath,
+              success: true,
+            ),
+            '$libraryDoc\n',
+          ),
+        );
+      }
+    }
+
     return results;
+  }
+
+  /// 无公开声明时，从 `library` 指令上的文档注释中提取库级说明
+  String? _extractLibraryDoc(CompilationUnit unit) {
+    for (final directive in unit.directives) {
+      if (directive is! LibraryDirective) continue;
+      return _docText(directive.documentationComment);
+    }
+    return null;
+  }
+
+  /// 取源文件名（去除目录与 `.dart` 后缀），用于库级文档同名输出
+  String _baseName(String sourcePath) {
+    final normalized = sourcePath.replaceAll('\\', '/');
+    final fileName = normalized.substring(normalized.lastIndexOf('/') + 1);
+    return fileName.endsWith('.dart')
+        ? fileName.substring(0, fileName.length - 5)
+        : fileName;
   }
 
   // ── 顶层声明 → API 信息 ──────────────────────────────────────────────────────
