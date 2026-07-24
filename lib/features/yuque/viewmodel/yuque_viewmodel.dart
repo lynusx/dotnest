@@ -205,6 +205,40 @@ class YuqueViewModel extends ChangeNotifier {
     await _scanFolder();
   }
 
+  /// 将扫描结果导出为结构化目录 .md 文件：按源目录分组（跳过根目录），
+  /// 每组下按 `- [title](slug)` 列出文件；导出成功返回保存路径，用户取消返回 null
+  Future<String?> exportGroupedMarkdown() async {
+    final tree = scanGroupTree;
+    final buffer = StringBuffer();
+
+    void writeGroup(ScanGroupNode node, int depth) {
+      final indent = '  ' * depth;
+      buffer.writeln('$indent- [${node.name}]()');
+      for (final file in node.files) {
+        buffer.writeln('$indent  - [${file.title}](${file.slug})');
+      }
+      for (final child in node.children) {
+        writeGroup(child, depth + 1);
+      }
+    }
+
+    for (final file in tree.rootFiles) {
+      buffer.writeln('- [${file.title}](${file.slug})');
+    }
+    for (final group in tree.groups) {
+      writeGroup(group, 0);
+    }
+
+    final savedPath = await FilePicker.saveFile(
+      dialogTitle: '导出目录',
+      fileName: 'toc.md',
+      type: FileType.custom,
+      allowedExtensions: ['md'],
+      bytes: utf8.encode(buffer.toString()),
+    );
+    return savedPath;
+  }
+
   /// 递归扫描文件夹中的 .md 文件并解析 Front Matter
   Future<void> _scanFolder() async {
     if (_batchFolderPath == null) return;

@@ -55,6 +55,24 @@ class _BatchUploadPageState extends State<BatchUploadPage> {
 
 // ── 操作栏 ────────────────────────────────────────────────────────────────────
 
+Future<void> _exportGroupedMarkdown(
+  BuildContext context,
+  YuqueViewModel vm,
+) async {
+  final savedPath = await vm.exportGroupedMarkdown();
+  if (!context.mounted || savedPath == null) return;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('已导出至：$savedPath', style: TextStyle(fontSize: 13.sp)),
+      duration: const Duration(seconds: 2),
+      behavior: SnackBarBehavior.floating,
+      width: 420.w,
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+    ),
+  );
+}
+
 class _BatchActionBar extends StatelessWidget {
   final YuqueViewModel vm;
   final TextEditingController bookIdCtrl;
@@ -108,6 +126,25 @@ class _BatchActionBar extends StatelessWidget {
             onPressed: isUploading ? null : () => vm.pickBatchFolder(),
             icon: Icon(Icons.folder_open_outlined, size: 15.sp),
             label: Text('选择文件夹', style: TextStyle(fontSize: 13.sp)),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.sidebarIndicator,
+              side: BorderSide(
+                color: AppColors.sidebarIndicator.withValues(alpha: 0.5),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+          ),
+          SizedBox(width: 8.w),
+          // 导出目录
+          OutlinedButton.icon(
+            onPressed: (isUploading || !hasFiles)
+                ? null
+                : () => _exportGroupedMarkdown(context, vm),
+            icon: Icon(Icons.download_outlined, size: 15.sp),
+            label: Text('导出目录', style: TextStyle(fontSize: 13.sp)),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.sidebarIndicator,
               side: BorderSide(
