@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../model/md_file_item.dart';
+import '../model/scan_group_node.dart';
 import '../model/upload_result.dart';
 import '../model/yuque_doc.dart';
 import '../model/yuque_repo.dart';
@@ -52,6 +53,9 @@ class YuqueViewModel extends ChangeNotifier {
   int _batchUploadedCount = 0;
   String? _batchErrorMessage;
 
+  /// 已折叠的分组路径集合（分组树节点的 [ScanGroupNode.path]）
+  final Set<String> _collapsedGroupPaths = {};
+
   String get batchBookId => _batchBookId;
   String? get batchFolderPath => _batchFolderPath;
   List<MdFileItem> get scannedFiles => List.unmodifiable(_scannedFiles);
@@ -59,6 +63,21 @@ class YuqueViewModel extends ChangeNotifier {
   bool get isBatchUploading => _isBatchUploading;
   int get batchUploadedCount => _batchUploadedCount;
   String? get batchErrorMessage => _batchErrorMessage;
+
+  /// 按源目录结构分组后的扫描结果（跳过根目录）
+  ({List<MdFileItem> rootFiles, List<ScanGroupNode> groups})
+  get scanGroupTree =>
+      ScanGroupNode.buildTree(_scannedFiles, _batchFolderPath ?? '');
+
+  bool isGroupCollapsed(String groupPath) =>
+      _collapsedGroupPaths.contains(groupPath);
+
+  void toggleGroupCollapsed(String groupPath) {
+    if (!_collapsedGroupPaths.remove(groupPath)) {
+      _collapsedGroupPaths.add(groupPath);
+    }
+    notifyListeners();
+  }
 
   YuqueViewModel() {
     _loadConfig();
@@ -181,6 +200,7 @@ class YuqueViewModel extends ChangeNotifier {
     _uploadResults = [];
     _batchUploadedCount = 0;
     _batchErrorMessage = null;
+    _collapsedGroupPaths.clear();
     notifyListeners();
     await _scanFolder();
   }

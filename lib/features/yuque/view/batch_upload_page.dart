@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../model/md_file_item.dart';
+import '../model/scan_group_node.dart';
 import '../model/upload_result.dart';
 import '../viewmodel/yuque_viewmodel.dart';
 
@@ -260,12 +261,53 @@ class _BatchContentBody extends StatelessWidget {
 
 // ── 扫描预览表格 ───────────────────────────────────────────────────────────────
 
+/// 扁平化后的一行：分组标题行或文件行
+sealed class _ScanRow {
+  final int depth;
+  const _ScanRow(this.depth);
+}
+
+class _ScanGroupHeaderRow extends _ScanRow {
+  final ScanGroupNode node;
+  const _ScanGroupHeaderRow(this.node, int depth) : super(depth);
+}
+
+class _ScanFileRow extends _ScanRow {
+  final MdFileItem file;
+  const _ScanFileRow(this.file, int depth) : super(depth);
+}
+
+/// 依据分组树与折叠状态，展开为可直接渲染的行列表
+List<_ScanRow> _flattenScanRows(YuqueViewModel vm) {
+  final tree = vm.scanGroupTree;
+  final rows = <_ScanRow>[
+    for (final file in tree.rootFiles) _ScanFileRow(file, 0),
+  ];
+
+  void visit(ScanGroupNode node, int depth) {
+    rows.add(_ScanGroupHeaderRow(node, depth));
+    if (vm.isGroupCollapsed(node.path)) return;
+    for (final file in node.files) {
+      rows.add(_ScanFileRow(file, depth + 1));
+    }
+    for (final child in node.children) {
+      visit(child, depth + 1);
+    }
+  }
+
+  for (final group in tree.groups) {
+    visit(group, 0);
+  }
+  return rows;
+}
+
 class _ScanPreviewTable extends StatelessWidget {
   final YuqueViewModel vm;
   const _ScanPreviewTable({required this.vm});
 
   @override
   Widget build(BuildContext context) {
+    final rows = _flattenScanRows(vm);
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 24.h),
       child: Container(
@@ -291,15 +333,88 @@ class _ScanPreviewTable extends StatelessWidget {
             ),
             Expanded(
               child: ListView.separated(
-                itemCount: vm.scannedFiles.length,
+                itemCount: rows.length,
                 separatorBuilder: (_, _) => Divider(
                   height: 1,
                   thickness: 1,
                   color: Colors.black.withValues(alpha: 0.04),
                 ),
-                itemBuilder: (context, index) =>
-                    _ScanPreviewRow(file: vm.scannedFiles[index], index: index),
+                itemBuilder: (context, index) {
+                  final row = rows[index];
+                  return switch (row) {
+                    _ScanGroupHeaderRow() => _ScanGroupHeader(
+                      vm: vm,
+                      node: row.node,
+                      depth: row.depth,
+                    ),
+                    _ScanFileRow() => _ScanPreviewRow(
+                      file: row.file,
+                      depth: row.depth,
+                      index: index,
+                    ),
+                  };
+                },
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 分组标题行：可点击展开/折叠，按 depth 缩进以保留原有层级
+class _ScanGroupHeader extends StatelessWidget {
+  final YuqueViewModel vm;
+  final ScanGroupNode node;
+  final int depth;
+  const _ScanGroupHeader({
+    required this.vm,
+    required this.node,
+    required this.depth,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final collapsed = vm.isGroupCollapsed(node.path);
+    return InkWell(
+      onTap: () => vm.toggleGroupCollapsed(node.path),
+      child: Container(
+        color: AppColors.contentBg.withValues(alpha: 0.7),
+        padding: EdgeInsets.only(
+          left: 16.w + depth * 18.w,
+          right: 16.w,
+          top: 9.h,
+          bottom: 9.h,
+        ),
+        child: Row(
+          children: [
+            Icon(
+              collapsed
+                  ? Icons.chevron_right_rounded
+                  : Icons.expand_more_rounded,
+              size: 16.sp,
+              color: AppColors.textSecondary,
+            ),
+            SizedBox(width: 4.w),
+            Icon(
+              Icons.folder_outlined,
+              size: 14.sp,
+              color: AppColors.sidebarIndicator.withValues(alpha: 0.8),
+            ),
+            SizedBox(width: 6.w),
+            Text(
+              node.name,
+              style: TextStyle(
+                fontSize: 12.5.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              '${node.totalFileCount} 个文件',
+              style: TextStyle(fontSize: 11.sp, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -349,8 +464,13 @@ class _ScanPreviewHeader extends StatelessWidget {
 
 class _ScanPreviewRow extends StatefulWidget {
   final MdFileItem file;
+  final int depth;
   final int index;
-  const _ScanPreviewRow({required this.file, required this.index});
+  const _ScanPreviewRow({
+    required this.file,
+    required this.depth,
+    required this.index,
+  });
 
   @override
   State<_ScanPreviewRow> createState() => _ScanPreviewRowState();
@@ -373,7 +493,12 @@ class _ScanPreviewRowState extends State<_ScanPreviewRow> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 100),
         color: bg,
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 11.h),
+        padding: EdgeInsets.only(
+          left: 16.w + widget.depth * 18.w,
+          right: 16.w,
+          top: 11.h,
+          bottom: 11.h,
+        ),
         child: Row(
           children: [
             Expanded(
