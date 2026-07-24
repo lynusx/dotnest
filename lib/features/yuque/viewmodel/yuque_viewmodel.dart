@@ -52,11 +52,13 @@ class YuqueViewModel extends ChangeNotifier {
   bool _isBatchUploading = false;
   int _batchUploadedCount = 0;
   String? _batchErrorMessage;
+  String _exportBaseUrl = '';
 
   /// 已折叠的分组路径集合（分组树节点的 [ScanGroupNode.path]）
   final Set<String> _collapsedGroupPaths = {};
 
   String get batchBookId => _batchBookId;
+  String get exportBaseUrl => _exportBaseUrl;
   String? get batchFolderPath => _batchFolderPath;
   List<MdFileItem> get scannedFiles => List.unmodifiable(_scannedFiles);
   List<UploadResult> get uploadResults => List.unmodifiable(_uploadResults);
@@ -235,6 +237,27 @@ class YuqueViewModel extends ChangeNotifier {
       type: FileType.custom,
       allowedExtensions: ['md'],
       bytes: utf8.encode(buffer.toString()),
+    );
+    return savedPath;
+  }
+
+  /// 将扫描结果导出为 `{title: baseUrl/slug}` 结构的 .json 文件；
+  /// 导出成功返回保存路径，用户取消返回 null
+  Future<String?> exportLinksJson(String baseUrl) async {
+    _exportBaseUrl = baseUrl.trim();
+    final normalizedBase = _exportBaseUrl.replaceFirst(RegExp(r'/+$'), '');
+    final links = <String, String>{
+      for (final file in _scannedFiles)
+        file.title: '$normalizedBase/${file.slug}',
+    };
+    final jsonStr = const JsonEncoder.withIndent('  ').convert(links);
+
+    final savedPath = await FilePicker.saveFile(
+      dialogTitle: '导出链接',
+      fileName: 'links.json',
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+      bytes: utf8.encode(jsonStr),
     );
     return savedPath;
   }

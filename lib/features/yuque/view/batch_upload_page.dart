@@ -55,12 +55,7 @@ class _BatchUploadPageState extends State<BatchUploadPage> {
 
 // ── 操作栏 ────────────────────────────────────────────────────────────────────
 
-Future<void> _exportGroupedMarkdown(
-  BuildContext context,
-  YuqueViewModel vm,
-) async {
-  final savedPath = await vm.exportGroupedMarkdown();
-  if (!context.mounted || savedPath == null) return;
+void _showExportedSnackBar(BuildContext context, String savedPath) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text('已导出至：$savedPath', style: TextStyle(fontSize: 13.sp)),
@@ -71,6 +66,97 @@ Future<void> _exportGroupedMarkdown(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
     ),
   );
+}
+
+Future<void> _exportGroupedMarkdown(
+  BuildContext context,
+  YuqueViewModel vm,
+) async {
+  final savedPath = await vm.exportGroupedMarkdown();
+  if (!context.mounted || savedPath == null) return;
+  _showExportedSnackBar(context, savedPath);
+}
+
+/// 弹窗输入 baseURL 后导出 `{title: baseUrl/slug}` 结构的链接 .json
+Future<void> _exportLinksJson(BuildContext context, YuqueViewModel vm) async {
+  final baseUrl = await showDialog<String>(
+    context: context,
+    builder: (context) => _BaseUrlDialog(initialValue: vm.exportBaseUrl),
+  );
+  if (baseUrl == null || !context.mounted) return;
+  final savedPath = await vm.exportLinksJson(baseUrl);
+  if (!context.mounted || savedPath == null) return;
+  _showExportedSnackBar(context, savedPath);
+}
+
+/// 导出链接前收集 baseURL 的输入弹窗
+class _BaseUrlDialog extends StatefulWidget {
+  final String initialValue;
+  const _BaseUrlDialog({required this.initialValue});
+
+  @override
+  State<_BaseUrlDialog> createState() => _BaseUrlDialogState();
+}
+
+class _BaseUrlDialogState extends State<_BaseUrlDialog> {
+  late final TextEditingController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final value = _ctrl.text.trim();
+    if (value.isEmpty) return;
+    Navigator.of(context).pop(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('导出链接', style: TextStyle(fontSize: 15.sp)),
+      content: SizedBox(
+        width: 360.w,
+        child: TextField(
+          controller: _ctrl,
+          autofocus: true,
+          style: TextStyle(fontSize: 13.sp),
+          decoration: InputDecoration(
+            hintText: 'baseURL，例如 https://www.yuque.com',
+            hintStyle: TextStyle(
+              fontSize: 12.sp,
+              color: AppColors.textSecondary,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+          ),
+          onSubmitted: (_) => _submit(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('取消', style: TextStyle(fontSize: 13.sp)),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.sidebarIndicator,
+          ),
+          child: Text('导出', style: TextStyle(fontSize: 13.sp)),
+        ),
+      ],
+    );
+  }
 }
 
 class _BatchActionBar extends StatelessWidget {
@@ -145,6 +231,25 @@ class _BatchActionBar extends StatelessWidget {
                 : () => _exportGroupedMarkdown(context, vm),
             icon: Icon(Icons.download_outlined, size: 15.sp),
             label: Text('导出目录', style: TextStyle(fontSize: 13.sp)),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.sidebarIndicator,
+              side: BorderSide(
+                color: AppColors.sidebarIndicator.withValues(alpha: 0.5),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+          ),
+          SizedBox(width: 8.w),
+          // 导出链接
+          OutlinedButton.icon(
+            onPressed: (isUploading || !hasFiles)
+                ? null
+                : () => _exportLinksJson(context, vm),
+            icon: Icon(Icons.link_outlined, size: 15.sp),
+            label: Text('导出链接', style: TextStyle(fontSize: 13.sp)),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.sidebarIndicator,
               side: BorderSide(
