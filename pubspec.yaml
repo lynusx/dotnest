@@ -26,6 +26,7 @@ dependencies:
   file_picker: ^11.0.2
   # Dart 源码分析
   analyzer: ^13.0.0
+  dart_style: ^3.1.9
 
 dev_dependencies:
   flutter_test:
