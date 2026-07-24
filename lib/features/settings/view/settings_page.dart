@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../yuque/viewmodel/yuque_viewmodel.dart';
+import '../viewmodel/settings_viewmodel.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -64,10 +65,104 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             SizedBox(height: 20.h),
+            _buildDisplaySettingsCard(),
+            SizedBox(height: 20.h),
             _buildYuqueConfigCard(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDisplaySettingsCard() {
+    return Consumer<SettingsViewModel>(
+      builder: (context, settings, _) {
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.cardBg,
+            borderRadius: BorderRadius.circular(12.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 12,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          padding: EdgeInsets.all(20.r),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.text_fields_rounded,
+                    size: 16.sp,
+                    color: AppColors.sidebarIndicator,
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    '显示设置',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 14.h),
+              Row(
+                children: [
+                  Text(
+                    '字体大小',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  Expanded(
+                    child: Slider(
+                      value: settings.fontScale,
+                      min: SettingsViewModel.minFontScale,
+                      max: SettingsViewModel.maxFontScale,
+                      activeColor: AppColors.sidebarIndicator,
+                      onChanged: (value) => settings.setFontScale(value),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 48.w,
+                    child: Text(
+                      '${(settings.fontScale * 100).round()}%',
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  TextButton(
+                    onPressed: settings.resetFontScale,
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.sidebarIndicator,
+                      padding: EdgeInsets.symmetric(horizontal: 10.w),
+                    ),
+                    child: Text('恢复默认', style: TextStyle(fontSize: 13.sp)),
+                  ),
+                ],
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                '示例文字 Aa 123',
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -143,12 +238,13 @@ class _SettingsPageState extends State<SettingsPage> {
                   OutlinedButton(
                     onPressed: vm.isLoading
                         ? null
-                        : () =>
-                              vm.saveConfig(_tokenCtrl.text, _loginCtrl.text),
+                        : () => vm.saveConfig(_tokenCtrl.text, _loginCtrl.text),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.sidebarIndicator,
                       side: BorderSide(
-                        color: AppColors.sidebarIndicator.withValues(alpha: 0.5),
+                        color: AppColors.sidebarIndicator.withValues(
+                          alpha: 0.5,
+                        ),
                       ),
                       padding: EdgeInsets.symmetric(
                         horizontal: 16.w,
