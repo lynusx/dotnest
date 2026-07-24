@@ -4,6 +4,7 @@ import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:path/path.dart' as p;
 
 import '../model/extract_result.dart';
 
@@ -53,20 +54,20 @@ class DartAnalyzerService {
     }
 
     final classIndex = _buildClassIndex(parsedFiles);
-    final usedFileNames = <String>{};
 
     for (final pf in parsedFiles) {
       try {
-        final fileResults = _processFile(
-          pf.unit,
-          pf.sourcePath,
-          usedFileNames,
-          classIndex,
-        );
-        for (final r in fileResults) {
-          final outputFile = File('$outputDir/${r.result.fileName}');
-          await outputFile.writeAsString(r.markdown);
-          results.add(r.result);
+        final fileResults = _processFile(pf.unit, pf.sourcePath, classIndex);
+        if (fileResults.isNotEmpty) {
+          final relDir = p.relative(p.dirname(pf.sourcePath), from: sourceDir);
+          final baseName = _baseName(pf.sourcePath);
+          final targetDir = p.normalize(p.join(outputDir, relDir, baseName));
+          await Directory(targetDir).create(recursive: true);
+          for (final r in fileResults) {
+            final outputFile = File(p.join(targetDir, r.result.fileName));
+            await outputFile.writeAsString(r.markdown);
+            results.add(r.result);
+          }
         }
       } catch (e) {
         results.add(
@@ -111,9 +112,9 @@ class DartAnalyzerService {
   List<_ExtractResultInternal> _processFile(
     CompilationUnit unit,
     String sourcePath,
-    Set<String> usedFileNames,
     Map<String, _ClassIndexEntry> classIndex,
   ) {
+    final usedFileNames = <String>{};
     final results = <_ExtractResultInternal>[];
     for (final declaration in unit.declarations) {
       for (final api in _extractApis(declaration, classIndex)) {

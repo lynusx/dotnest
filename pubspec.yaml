@@ -24,6 +24,7 @@ dependencies:
   path_provider: ^2.1.6
   # 工具
   file_picker: ^11.0.2
+  path: ^1.9.1
   # Dart 源码分析
   analyzer: ^13.0.0
   dart_style: ^3.1.9
