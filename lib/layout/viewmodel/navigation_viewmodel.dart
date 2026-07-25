@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 
-enum NavPage { extract, yuqueRepos, yuqueDocs, yuqueBatchUpload, yuqueTocUpdate, settings }
+enum NavPage {
+  extract,
+  yuqueRepos,
+  yuqueDocs,
+  yuqueBatchUpload,
+  yuqueTocUpdate,
+  linkRewrite,
+  settings,
+}
 
 const List<NavPage> kNavPageOrder = [
   NavPage.extract,
@@ -8,6 +16,7 @@ const List<NavPage> kNavPageOrder = [
   NavPage.yuqueDocs,
   NavPage.yuqueBatchUpload,
   NavPage.yuqueTocUpdate,
+  NavPage.linkRewrite,
 ];
 
 extension NavPageExtension on NavPage {
@@ -23,6 +32,8 @@ extension NavPageExtension on NavPage {
         return '批量创建';
       case NavPage.yuqueTocUpdate:
         return '目录更新';
+      case NavPage.linkRewrite:
+        return '链接重写';
       case NavPage.settings:
         return '设置';
     }
@@ -40,6 +51,8 @@ extension NavPageExtension on NavPage {
         return Icons.upload_file_outlined;
       case NavPage.yuqueTocUpdate:
         return Icons.account_tree_outlined;
+      case NavPage.linkRewrite:
+        return Icons.link_rounded;
       case NavPage.settings:
         return Icons.settings_outlined;
     }
@@ -53,6 +66,7 @@ extension NavPageExtension on NavPage {
       case NavPage.yuqueTocUpdate:
         return true;
       case NavPage.extract:
+      case NavPage.linkRewrite:
       case NavPage.settings:
         return false;
     }
