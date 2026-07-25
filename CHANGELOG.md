@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Git Hook**：新增 `prepare-commit-msg` hook，根据提交信息自动更新版本号
+  - `feat(scope):` 提交自动递增 minor 版本
+  - `fix(scope):` 提交自动递增 patch 版本
+  - `BREAKING CHANGE:` 或 `feat!:` 提交自动递增 major 版本
+  - 自动将 `pubspec.yaml` 添加到提交并追加版本更新说明
+
 ## [0.2.0] - 2026-07-25
 
 ### Added
