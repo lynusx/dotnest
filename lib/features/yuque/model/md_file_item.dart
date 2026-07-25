@@ -14,11 +14,15 @@ class MdFileItem {
   /// 文档正文（已移除 Front Matter）
   final String body;
 
+  /// Front Matter 中是否同时存在 title、slug 字段
+  final bool hasLinkFields;
+
   const MdFileItem({
     required this.filePath,
     required this.fileName,
     required this.slug,
     required this.title,
     required this.body,
+    this.hasLinkFields = true,
   });
 }

@@ -248,7 +248,7 @@ class YuqueViewModel extends ChangeNotifier {
     final normalizedBase = _exportBaseUrl.replaceFirst(RegExp(r'/+$'), '');
     final links = <String, String>{
       for (final file in _scannedFiles)
-        file.title: '$normalizedBase/${file.slug}',
+        if (file.hasLinkFields) file.title: '$normalizedBase/${file.slug}',
     };
     final jsonStr = const JsonEncoder.withIndent('  ').convert(links);
 
@@ -286,6 +286,7 @@ class YuqueViewModel extends ChangeNotifier {
               slug: slug ?? name,
               title: title ?? name,
               body: body,
+              hasLinkFields: slug != null && title != null,
             ),
           );
         }
