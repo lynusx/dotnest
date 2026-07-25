@@ -60,8 +60,13 @@ class DartAnalyzerService {
         final fileResults = _processFile(pf.unit, pf.sourcePath, classIndex);
         if (fileResults.isNotEmpty) {
           final relDir = p.relative(p.dirname(pf.sourcePath), from: sourceDir);
-          final baseName = _baseName(pf.sourcePath);
-          final targetDir = p.normalize(p.join(outputDir, relDir, baseName));
+          // 纯 library 级文档：直接展开到 relDir 下，不归档到同名子目录
+          final isLibraryOnly =
+              fileResults.length == 1 &&
+              fileResults.first.result.apiType == ApiType.library;
+          final targetDir = isLibraryOnly
+              ? p.normalize(p.join(outputDir, relDir))
+              : p.normalize(p.join(outputDir, relDir, _baseName(pf.sourcePath)));
           await Directory(targetDir).create(recursive: true);
           for (final r in fileResults) {
             final outputFile = File(p.join(targetDir, r.result.fileName));
