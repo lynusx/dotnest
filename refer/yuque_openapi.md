@@ -27,7 +27,7 @@
 - 请注意，我们的服务有使用次数的限制：每小时最多 5000 次请求，每秒最多 100 次请求。如果请求太频繁，可能需要稍后重试。
 - 当您调用我们的接口时，会看到 `X-RateLimit-Limit`（总次数限制）和 `X-RateLimit-Remaining`（剩余次数）这样的信息，这有助于您了解当前的使用情况。
 
-## doc
+## 文档
 
 ### 获取知识库的文档列表
 
@@ -92,9 +92,40 @@ Content-Type: `application/json`
 | :------- | :-------------------------- | :------- |
 | data     | [V2DocDetail](#V2docdetail) | 否       |
 
+### 更新文档
+
+#### 请求地址
+
+`PUT /api/v2/repos/{book_id}/docs/{slug}`
+
+#### 请求参数
+
+| 参数名  | 位置 | 类型    | 必填 | 说明      |
+| ------- | ---- | ------- | ---- | --------- |
+| book_id | path | integer | 是   | 知识库 ID |
+| slug    | path | string  | 是   | 文档路径  |
+
+#### 请求体 (Request Body)
+
+Content-Type: `application/json`
+
+| 字段  | 类型   | 必填 | 说明     |
+| ----- | ------ | ---- | -------- |
+| slug  | string | 否   | 路径     |
+| title | string | 否   | 标题     |
+| body  | string | 是   | 正文内容 |
+
+#### 响应 (Responses)
+
+**200** — OK
+
+| **字段** | **类型**                    | **必填** |
+| :------- | :-------------------------- | :------- |
+| data     | [V2DocDetail](#V2docdetail) | 否       |
+
 ---
 
-### repo
+## 知识库
 
 ### 获取知识库列表
 
