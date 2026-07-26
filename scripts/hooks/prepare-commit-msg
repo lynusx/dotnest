@@ -1,0 +1,82 @@
+#!/bin/bash
+# Auto-increment version based on commit message
+# 根据提交信息自动递增版本号
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+
+# 只处理正常的 commit，跳过 merge、squash、amend 等
+case "$COMMIT_SOURCE" in
+    merge|squash|commit)
+        exit 0
+        ;;
+esac
+
+# COMMIT_SOURCE 无法区分「普通 -m 提交」与「--amend -m 提交」（Git 本身的限制），
+# 需要检查父进程（git 自身）的调用命令行是否包含 --amend
+PARENT_CMD=$(ps -o command= -p "$PPID" 2>/dev/null)
+case "$PARENT_CMD" in
+    *--amend*)
+        exit 0
+        ;;
+esac
+
+# 读取提交信息
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# 读取当前版本号
+PUBSPEC_FILE="pubspec.yaml"
+if [ ! -f "$PUBSPEC_FILE" ]; then
+    exit 0
+fi
+
+CURRENT_VERSION=$(grep "^version:" "$PUBSPEC_FILE" | sed 's/version: *//' | sed 's/+.*//')
+BUILD_NUMBER=$(grep "^version:" "$PUBSPEC_FILE" | sed 's/.*+//')
+
+if [ -z "$CURRENT_VERSION" ]; then
+    exit 0
+fi
+
+# 解析版本号
+IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+
+# 根据提交类型决定版本更新策略
+if echo "$COMMIT_MSG" | grep -qE "^(feat|feature)\("; then
+    # 新功能：递增 minor 版本
+    MINOR=$((MINOR + 1))
+    PATCH=0
+    VERSION_TYPE="minor"
+elif echo "$COMMIT_MSG" | grep -qE "^(fix|bugfix)\("; then
+    # 修复：递增 patch 版本
+    PATCH=$((PATCH + 1))
+    VERSION_TYPE="patch"
+elif echo "$COMMIT_MSG" | grep -qE "^BREAKING CHANGE:|^[a-z]+\(.*\)!:"; then
+    # 破坏性变更：递增 major 版本
+    MAJOR=$((MAJOR + 1))
+    MINOR=0
+    PATCH=0
+    VERSION_TYPE="major"
+else
+    # 其他类型（chore、docs、refactor 等）不更新版本
+    exit 0
+fi
+
+NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+
+# 如果版本号没有变化，跳过
+if [ "$NEW_VERSION" = "$CURRENT_VERSION" ]; then
+    exit 0
+fi
+
+# 更新 pubspec.yaml 中的版本号
+sed -i.bak "s/^version: .*/version: $NEW_VERSION+$BUILD_NUMBER/" "$PUBSPEC_FILE"
+rm -f "$PUBSPEC_FILE.bak"
+
+# 将 pubspec.yaml 添加到本次提交
+git add "$PUBSPEC_FILE"
+
+# 在提交信息中添加版本更新说明
+echo "" >> "$COMMIT_MSG_FILE"
+echo "版本自动更新: $CURRENT_VERSION -> $NEW_VERSION ($VERSION_TYPE)" >> "$COMMIT_MSG_FILE"
+
+exit 0

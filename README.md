@@ -100,6 +100,14 @@ flutter run -d macos
 flutter run -d windows
 ```
 
+### 安装 Git Hooks
+
+项目共享的 Git Hooks（如提交时自动更新版本号）存放在 `scripts/hooks/`，`.git/hooks/` 不受版本控制，需要手动安装一次：
+
+```bash
+bash scripts/hooks/install.sh
+```
+
 ## 项目结构
 
 ```
