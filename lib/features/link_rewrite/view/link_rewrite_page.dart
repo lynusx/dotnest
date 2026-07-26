@@ -37,14 +37,30 @@ class _LinkRewritePageContent extends StatelessWidget {
         children: [
           const _PageHeader(),
           Expanded(
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 380.w,
-                  child: const _ConfigPanel(),
-                ),
-                Expanded(child: const _ResultPanel()),
-              ],
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // 当宽度不足时使用单列布局
+                if (constraints.maxWidth < 800) {
+                  return const SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        _ConfigPanel(),
+                        _ResultPanel(),
+                      ],
+                    ),
+                  );
+                }
+                // 宽度足够时使用双列布局
+                return Row(
+                  children: [
+                    SizedBox(
+                      width: 380.w,
+                      child: const _ConfigPanel(),
+                    ),
+                    Expanded(child: const _ResultPanel()),
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -90,27 +106,31 @@ class _PageHeader extends StatelessWidget {
             ),
           ),
           SizedBox(width: 16.w),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '链接重写',
-                style: TextStyle(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.5,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '链接重写',
+                  style: TextStyle(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                    letterSpacing: -0.5,
+                  ),
                 ),
-              ),
-              Text(
-                '将正文中的 [X] 引用按 url_map.json 或本文件 H3 标题替换为链接',
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  color: AppColors.textSecondary,
-                  height: 1.4,
+                Text(
+                  '将正文中的 [X] 引用按 url_map.json 或本文件 H3 标题替换为链接',
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -517,7 +537,10 @@ class _StatsBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(20.w),
-      child: Row(
+      child: Wrap(
+        spacing: 12.w,
+        runSpacing: 12.h,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           _StatCard(
             label: '已处理',
@@ -525,28 +548,24 @@ class _StatsBar extends StatelessWidget {
             color: AppColors.success,
             icon: Icons.check_circle_rounded,
           ),
-          SizedBox(width: 12.w),
           _StatCard(
             label: '失败',
             count: stats.errorFiles,
             color: AppColors.error,
             icon: Icons.error_rounded,
           ),
-          SizedBox(width: 12.w),
           _StatCard(
             label: '替换总数',
             count: stats.totalReplacements,
             color: AppColors.primary,
             icon: Icons.swap_horiz_rounded,
           ),
-          SizedBox(width: 12.w),
           _StatCard(
             label: '合计',
             count: stats.totalFiles,
             color: AppColors.info,
             icon: Icons.insert_drive_file_rounded,
           ),
-          const Spacer(),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
             decoration: BoxDecoration(
