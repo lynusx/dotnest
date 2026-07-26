@@ -67,50 +67,73 @@ class _DocActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
+    return Container(
+      padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 16.h),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary.withValues(alpha: 0.03),
+            AppColors.cardBg,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
       child: Row(
         children: [
+          Container(
+            padding: EdgeInsets.all(8.r),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Icon(
+              Icons.article_outlined,
+              size: 18.sp,
+              color: AppColors.primary,
+            ),
+          ),
+          SizedBox(width: 12.w),
           Text(
-            vm.docs.isEmpty ? '文档列表' : '共 ${vm.docs.length} 篇文档',
+            vm.docs.isEmpty ? '文档列表' : '共 ${vm.docs.length} 篇',
             style: TextStyle(
-              fontSize: 13.sp,
+              fontSize: 14.sp,
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
             ),
           ),
           const Spacer(),
           SizedBox(
-            width: 160.w,
+            width: 180.w,
             child: TextField(
               controller: bookIdCtrl,
               style: TextStyle(fontSize: 13.sp, color: AppColors.textPrimary),
               decoration: InputDecoration(
-                hintText: '知识库 ID',
+                hintText: '输入知识库 ID',
                 hintStyle: TextStyle(
                   fontSize: 12.sp,
                   color: AppColors.textSecondary,
                 ),
                 contentPadding: EdgeInsets.symmetric(
-                  horizontal: 10.w,
-                  vertical: 8.h,
+                  horizontal: 12.w,
+                  vertical: 10.h,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(10.r),
                   borderSide: BorderSide(
-                    color: Colors.black.withValues(alpha: 0.12),
+                    color: Colors.black.withValues(alpha: 0.08),
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(10.r),
                   borderSide: BorderSide(
-                    color: Colors.black.withValues(alpha: 0.12),
+                    color: Colors.black.withValues(alpha: 0.08),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(10.r),
                   borderSide: BorderSide(
-                    color: AppColors.sidebarIndicator,
+                    color: AppColors.primary,
                     width: 1.5,
                   ),
                 ),
@@ -119,7 +142,7 @@ class _DocActionBar extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: 10.w),
+          SizedBox(width: 12.w),
           FilledButton.icon(
             onPressed: vm.isDocsLoading
                 ? null
@@ -133,17 +156,19 @@ class _DocActionBar extends StatelessWidget {
                       color: Colors.white,
                     ),
                   )
-                : Icon(Icons.cloud_download_outlined, size: 15.sp),
+                : Icon(Icons.cloud_download_outlined, size: 16.sp),
             label: Text(
               vm.isDocsLoading ? '获取中...' : '获取文档列表',
-              style: TextStyle(fontSize: 13.sp),
+              style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
             ),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.sidebarIndicator,
-              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+              backgroundColor: AppColors.primary,
+              disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.4),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
+              elevation: 0,
             ),
           ),
         ],
@@ -161,19 +186,44 @@ class _DocTableBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (vm.isDocsLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(color: AppColors.primary),
+            SizedBox(height: 16.h),
+            Text(
+              '正在获取文档列表...',
+              style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
+            ),
+          ],
+        ),
+      );
     }
     if (vm.docsErrorMessage != null) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.error_outline_rounded,
-              size: 36.sp,
-              color: Colors.redAccent.withValues(alpha: 0.7),
+            Container(
+              width: 80.r,
+              height: 80.r,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.error.withValues(alpha: 0.15),
+                    AppColors.error.withValues(alpha: 0.05),
+                  ],
+                ),
+              ),
+              child: Icon(
+                Icons.error_outline_rounded,
+                size: 36.sp,
+                color: AppColors.error,
+              ),
             ),
-            SizedBox(height: 10.h),
+            SizedBox(height: 16.h),
             Text(
               vm.docsErrorMessage!,
               style: TextStyle(fontSize: 13.sp, color: AppColors.textPrimary),
@@ -187,12 +237,25 @@ class _DocTableBody extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.article_outlined,
-              size: 44.sp,
-              color: AppColors.sidebarIndicator.withValues(alpha: 0.35),
+            Container(
+              width: 80.r,
+              height: 80.r,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withValues(alpha: 0.15),
+                    AppColors.primary.withValues(alpha: 0.05),
+                  ],
+                ),
+              ),
+              child: Icon(
+                Icons.article_outlined,
+                size: 36.sp,
+                color: AppColors.primary,
+              ),
             ),
-            SizedBox(height: 14.h),
+            SizedBox(height: 16.h),
             Text(
               '输入知识库 ID 后点击「获取文档列表」',
               style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
@@ -202,16 +265,16 @@ class _DocTableBody extends StatelessWidget {
       );
     }
     return Padding(
-      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 24.h),
+      padding: EdgeInsets.fromLTRB(24.w, 0, 24.w, 24.h),
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.cardBg,
-          borderRadius: BorderRadius.circular(10.r),
+          borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 1),
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -249,8 +312,15 @@ class _DocTableHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.contentBg,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary.withValues(alpha: 0.05),
+            AppColors.contentBg,
+          ],
+        ),
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
       child: Row(
         children: [
           Expanded(
@@ -265,7 +335,7 @@ class _DocTableHeader extends StatelessWidget {
             ),
           ),
           SizedBox(
-            width: 90.w,
+            width: 100.w,
             child: Text(
               'ID',
               style: TextStyle(
@@ -278,7 +348,7 @@ class _DocTableHeader extends StatelessWidget {
           Expanded(
             flex: 3,
             child: Text(
-              '路径',
+              '路径 (slug)',
               style: TextStyle(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
@@ -331,7 +401,7 @@ class _DocTableRowState extends State<_DocTableRow> {
   @override
   Widget build(BuildContext context) {
     final bg = _hovered
-        ? AppColors.sidebarItemHover
+        ? AppColors.primary.withValues(alpha: 0.04)
         : widget.index.isEven
         ? AppColors.cardBg
         : AppColors.contentBg.withValues(alpha: 0.5);
@@ -340,9 +410,9 @@ class _DocTableRowState extends State<_DocTableRow> {
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 100),
+        duration: const Duration(milliseconds: 150),
         color: bg,
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
         child: Row(
           children: [
             Expanded(
@@ -350,28 +420,49 @@ class _DocTableRowState extends State<_DocTableRow> {
               child: _copyable(
                 context,
                 widget.doc.title,
-                Text(
-                  widget.doc.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    color: AppColors.textPrimary,
-                  ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.description_outlined,
+                      size: 14.sp,
+                      color: AppColors.primary.withValues(alpha: 0.6),
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        widget.doc.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
             SizedBox(
-              width: 90.w,
+              width: 100.w,
               child: _copyable(
                 context,
                 '${widget.doc.id}',
-                Text(
-                  '${widget.doc.id}',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: AppColors.textSecondary,
-                    fontFeatures: const [FontFeature.tabularFigures()],
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Text(
+                    '${widget.doc.id}',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
                   ),
                 ),
               ),
@@ -388,6 +479,7 @@ class _DocTableRowState extends State<_DocTableRow> {
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: AppColors.textSecondary,
+                    fontFamily: 'monospace',
                   ),
                 ),
               ),

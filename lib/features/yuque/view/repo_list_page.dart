@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../viewmodel/yuque_viewmodel.dart';
 
-/// 知识库列表子页面 —— 渲染三列表格：名称、ID、路径
 class RepoListPage extends StatelessWidget {
   const RepoListPage({super.key});
 
@@ -13,62 +12,117 @@ class RepoListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<YuqueViewModel>(
       builder: (context, vm, _) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _ActionBar(vm: vm),
-            Expanded(child: _TableBody(vm: vm)),
-          ],
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.contentBg,
+                AppColors.contentBg.withValues(alpha: 0.8),
+              ],
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _PageHeader(vm: vm),
+              Expanded(child: _TableBody(vm: vm)),
+            ],
+          ),
         );
       },
     );
   }
 }
 
-// ── 操作栏 ────────────────────────────────────────────────────────────────────
-
-class _ActionBar extends StatelessWidget {
+class _PageHeader extends StatelessWidget {
   final YuqueViewModel vm;
-  const _ActionBar({required this.vm});
+  const _PageHeader({required this.vm});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(24.w, 0, 24.w, 12.h),
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 24.h),
+      decoration: BoxDecoration(
+        color: AppColors.cardBg,
+        border: Border(
+          bottom: BorderSide(color: AppColors.cardBorder, width: 1),
+        ),
+      ),
       child: Row(
         children: [
-          Text(
-            vm.repos.isEmpty ? '知识库列表' : '共 ${vm.repos.length} 个知识库',
-            style: TextStyle(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+          Container(
+            padding: EdgeInsets.all(12.r),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.primary, AppColors.primaryLight],
+              ),
+              borderRadius: BorderRadius.circular(12.r),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.folder_rounded,
+              size: 24.sp,
+              color: Colors.white,
             ),
           ),
-          const Spacer(),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '知识库列表',
+                  style: TextStyle(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                Text(
+                  vm.repos.isEmpty
+                      ? '暂无数据'
+                      : '共 ${vm.repos.length} 个知识库',
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
           FilledButton.icon(
             onPressed: vm.isLoading
                 ? null
                 : () => vm.fetchRepos(vm.token, vm.login),
             icon: vm.isLoading
                 ? SizedBox(
-                    width: 14.r,
-                    height: 14.r,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2,
+                    width: 18.w,
+                    height: 18.w,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
                       color: Colors.white,
                     ),
                   )
-                : Icon(Icons.cloud_download_outlined, size: 15.sp),
+                : Icon(Icons.cloud_download_outlined, size: 18.sp),
             label: Text(
               vm.isLoading ? '获取中...' : '获取知识库列表',
-              style: TextStyle(fontSize: 13.sp),
+              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
             ),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.sidebarIndicator,
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+              backgroundColor: AppColors.primary,
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
             ),
           ),
@@ -78,8 +132,6 @@ class _ActionBar extends StatelessWidget {
   }
 }
 
-// ── 表格区域 ──────────────────────────────────────────────────────────────────
-
 class _TableBody extends StatelessWidget {
   final YuqueViewModel vm;
   const _TableBody({required this.vm});
@@ -87,25 +139,66 @@ class _TableBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (vm.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (vm.errorMessage != null) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.error_outline_rounded,
-              size: 36.sp,
-              color: Colors.redAccent.withValues(alpha: 0.7),
+            SizedBox(
+              width: 48.w,
+              height: 48.w,
+              child: CircularProgressIndicator(
+                strokeWidth: 4,
+                color: AppColors.primary,
+              ),
             ),
-            SizedBox(height: 10.h),
+            SizedBox(height: 20.h),
             Text(
-              vm.errorMessage!,
-              style: TextStyle(fontSize: 13.sp, color: AppColors.textPrimary),
+              '正在获取知识库列表...',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
+        ),
+      );
+    }
+
+    if (vm.errorMessage != null) {
+      return Center(
+        child: Container(
+          margin: EdgeInsets.all(32.w),
+          padding: EdgeInsets.all(24.w),
+          decoration: BoxDecoration(
+            color: AppColors.errorLight,
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.error_outline_rounded,
+                size: 48.sp,
+                color: AppColors.error,
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                '获取失败',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.error,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                vm.errorMessage!,
+                style: TextStyle(fontSize: 13.sp, color: AppColors.error),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -115,12 +208,28 @@ class _TableBody extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.library_books_outlined,
-              size: 44.sp,
-              color: AppColors.sidebarIndicator.withValues(alpha: 0.35),
+            Container(
+              padding: EdgeInsets.all(20.r),
+              decoration: BoxDecoration(
+                color: AppColors.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.library_books_outlined,
+                size: 48.sp,
+                color: AppColors.primary,
+              ),
             ),
-            SizedBox(height: 14.h),
+            SizedBox(height: 20.h),
+            Text(
+              '暂无数据',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            SizedBox(height: 8.h),
             Text(
               '点击「获取知识库列表」加载数据',
               style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
@@ -131,36 +240,24 @@ class _TableBody extends StatelessWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(24.w, 0, 24.w, 24.h),
+      padding: EdgeInsets.all(32.w),
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.cardBg,
-          borderRadius: BorderRadius.circular(10.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 1),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: AppColors.cardBorder),
+          boxShadow: [AppColors.shadowMd],
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
           children: [
             _TableHeader(),
-            Divider(
-              height: 1,
-              thickness: 1,
-              color: Colors.black.withValues(alpha: 0.06),
-            ),
+            Divider(height: 1, color: AppColors.cardBorder),
             Expanded(
               child: ListView.separated(
                 itemCount: vm.repos.length,
-                separatorBuilder: (_, _) => Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: Colors.black.withValues(alpha: 0.04),
-                ),
+                separatorBuilder: (_, __) =>
+                    Divider(height: 1, color: AppColors.cardBorder.withValues(alpha: 0.5)),
                 itemBuilder: (context, index) =>
                     _TableRow(repo: vm.repos[index], index: index),
               ),
@@ -172,14 +269,12 @@ class _TableBody extends StatelessWidget {
   }
 }
 
-// ── 表头 ──────────────────────────────────────────────────────────────────────
-
 class _TableHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.contentBg,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+      color: AppColors.contentBg.withValues(alpha: 0.5),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
       child: Row(
         children: [
           Expanded(
@@ -187,20 +282,20 @@ class _TableHeader extends StatelessWidget {
             child: Text(
               '名称',
               style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
           SizedBox(
-            width: 90.w,
+            width: 100.w,
             child: Text(
               'ID',
               style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
@@ -209,9 +304,9 @@ class _TableHeader extends StatelessWidget {
             child: Text(
               '路径',
               style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
@@ -220,8 +315,6 @@ class _TableHeader extends StatelessWidget {
     );
   }
 }
-
-// ── 数据行 ────────────────────────────────────────────────────────────────────
 
 class _TableRow extends StatefulWidget {
   final dynamic repo;
@@ -240,12 +333,18 @@ class _TableRowState extends State<_TableRow> {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('已复制：$text', style: TextStyle(fontSize: 13.sp)),
+        content: Row(
+          children: [
+            Icon(Icons.check_circle_rounded, size: 18.sp, color: Colors.white),
+            SizedBox(width: 8.w),
+            Text('已复制：$text', style: TextStyle(fontSize: 13.sp)),
+          ],
+        ),
+        backgroundColor: AppColors.success,
         duration: const Duration(milliseconds: 1500),
         behavior: SnackBarBehavior.floating,
-        width: 300.w,
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+        margin: EdgeInsets.all(16.w),
       ),
     );
   }
@@ -259,19 +358,17 @@ class _TableRowState extends State<_TableRow> {
 
   @override
   Widget build(BuildContext context) {
-    final bg = _hovered
-        ? AppColors.sidebarItemHover
-        : widget.index.isEven
-        ? AppColors.cardBg
-        : AppColors.contentBg.withValues(alpha: 0.5);
-
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 100),
-        color: bg,
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        duration: const Duration(milliseconds: 150),
+        color: _hovered
+            ? AppColors.primaryContainer.withValues(alpha: 0.3)
+            : widget.index.isEven
+                ? AppColors.cardBg
+                : AppColors.contentBg.withValues(alpha: 0.3),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
         child: Row(
           children: [
             Expanded(
@@ -279,28 +376,56 @@ class _TableRowState extends State<_TableRow> {
               child: _copyable(
                 context,
                 widget.repo.name as String,
-                Text(
-                  widget.repo.name as String,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    color: AppColors.textPrimary,
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(6.r),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                      child: Icon(
+                        Icons.folder_rounded,
+                        size: 16.sp,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Text(
+                        widget.repo.name as String,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
             SizedBox(
-              width: 90.w,
+              width: 100.w,
               child: _copyable(
                 context,
                 '${widget.repo.id}',
-                Text(
-                  '${widget.repo.id}',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: AppColors.textSecondary,
-                    fontFeatures: const [FontFeature.tabularFigures()],
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.infoLight,
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Text(
+                    '${widget.repo.id}',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: AppColors.info,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'monospace',
+                    ),
                   ),
                 ),
               ),
@@ -315,8 +440,9 @@ class _TableRowState extends State<_TableRow> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: 13.sp,
                     color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),

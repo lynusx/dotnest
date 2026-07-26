@@ -122,22 +122,36 @@ class _BaseUrlDialogState extends State<_BaseUrlDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      backgroundColor: AppColors.cardBg,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       title: Text('导出链接', style: TextStyle(fontSize: 15.sp)),
       content: SizedBox(
         width: 360.w,
         child: TextField(
           controller: _ctrl,
           autofocus: true,
-          style: TextStyle(fontSize: 13.sp),
+          style: TextStyle(fontSize: 13.sp, color: AppColors.textPrimary),
           decoration: InputDecoration(
             hintText: 'baseURL，例如 https://www.yuque.com',
             hintStyle: TextStyle(
               fontSize: 12.sp,
               color: AppColors.textSecondary,
             ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.r),
+              borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.12)),
             ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.r),
+              borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.12)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.r),
+              borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+            ),
+            filled: true,
+            fillColor: AppColors.contentBg,
           ),
           onSubmitted: (_) => _submit(),
         ),
@@ -150,7 +164,8 @@ class _BaseUrlDialogState extends State<_BaseUrlDialog> {
         FilledButton(
           onPressed: _submit,
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.sidebarIndicator,
+            backgroundColor: AppColors.primary,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           ),
           child: Text('导出', style: TextStyle(fontSize: 13.sp)),
         ),
@@ -178,48 +193,77 @@ class _BatchActionBar extends StatelessWidget {
     final hasFiles = vm.scannedFiles.isNotEmpty;
     final isUploading = vm.isBatchUploading;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
+    return Container(
+      padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 16.h),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary.withValues(alpha: 0.03),
+            AppColors.cardBg,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
       child: Row(
         children: [
           // 文件夹路径展示
           Expanded(
             child: Container(
-              height: 36.h,
-              padding: EdgeInsets.symmetric(horizontal: 10.w),
+              height: 40.h,
+              padding: EdgeInsets.symmetric(horizontal: 12.w),
               decoration: BoxDecoration(
                 color: AppColors.contentBg,
-                borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(color: Colors.black.withValues(alpha: 0.12)),
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
               ),
               alignment: Alignment.centerLeft,
-              child: Text(
-                _folderLabel,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  color: vm.batchFolderPath != null
-                      ? AppColors.textPrimary
-                      : AppColors.textSecondary,
-                ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.folder_outlined,
+                    size: 16.sp,
+                    color: vm.batchFolderPath != null
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      _folderLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: vm.batchFolderPath != null
+                            ? AppColors.textPrimary
+                            : AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          SizedBox(width: 8.w),
+          SizedBox(width: 12.w),
           // 选择文件夹
           OutlinedButton.icon(
             onPressed: isUploading ? null : () => vm.pickBatchFolder(),
-            icon: Icon(Icons.folder_open_outlined, size: 15.sp),
+            icon: Icon(Icons.folder_open_outlined, size: 16.sp),
             label: Text('选择文件夹', style: TextStyle(fontSize: 13.sp)),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.sidebarIndicator,
-              side: BorderSide(
-                color: AppColors.sidebarIndicator.withValues(alpha: 0.5),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              foregroundColor: AppColors.primary,
+              side: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
             ),
           ),
@@ -229,16 +273,14 @@ class _BatchActionBar extends StatelessWidget {
             onPressed: (isUploading || !hasFiles)
                 ? null
                 : () => _exportGroupedMarkdown(context, vm),
-            icon: Icon(Icons.download_outlined, size: 15.sp),
+            icon: Icon(Icons.download_outlined, size: 16.sp),
             label: Text('导出目录', style: TextStyle(fontSize: 13.sp)),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.sidebarIndicator,
-              side: BorderSide(
-                color: AppColors.sidebarIndicator.withValues(alpha: 0.5),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              foregroundColor: AppColors.primary,
+              side: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
             ),
           ),
@@ -248,16 +290,14 @@ class _BatchActionBar extends StatelessWidget {
             onPressed: (isUploading || !hasFiles)
                 ? null
                 : () => _exportLinksJson(context, vm),
-            icon: Icon(Icons.link_outlined, size: 15.sp),
+            icon: Icon(Icons.link_outlined, size: 16.sp),
             label: Text('导出链接', style: TextStyle(fontSize: 13.sp)),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.sidebarIndicator,
-              side: BorderSide(
-                color: AppColors.sidebarIndicator.withValues(alpha: 0.5),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              foregroundColor: AppColors.primary,
+              side: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
             ),
           ),
@@ -275,25 +315,25 @@ class _BatchActionBar extends StatelessWidget {
                   color: AppColors.textSecondary,
                 ),
                 contentPadding: EdgeInsets.symmetric(
-                  horizontal: 10.w,
-                  vertical: 8.h,
+                  horizontal: 12.w,
+                  vertical: 10.h,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(10.r),
                   borderSide: BorderSide(
-                    color: Colors.black.withValues(alpha: 0.12),
+                    color: Colors.black.withValues(alpha: 0.08),
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(10.r),
                   borderSide: BorderSide(
-                    color: Colors.black.withValues(alpha: 0.12),
+                    color: Colors.black.withValues(alpha: 0.08),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(10.r),
                   borderSide: BorderSide(
-                    color: AppColors.sidebarIndicator,
+                    color: AppColors.primary,
                     width: 1.5,
                   ),
                 ),
@@ -302,7 +342,7 @@ class _BatchActionBar extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: 10.w),
+          SizedBox(width: 12.w),
           // 开始上传
           FilledButton.icon(
             onPressed: (isUploading || !hasFiles)
@@ -317,22 +357,21 @@ class _BatchActionBar extends StatelessWidget {
                       color: Colors.white,
                     ),
                   )
-                : Icon(Icons.upload_outlined, size: 15.sp),
+                : Icon(Icons.upload_outlined, size: 16.sp),
             label: Text(
               isUploading
                   ? '上传中 ${vm.batchUploadedCount}/${vm.scannedFiles.length}'
                   : '开始上传',
-              style: TextStyle(fontSize: 13.sp),
+              style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
             ),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.sidebarIndicator,
-              disabledBackgroundColor: AppColors.sidebarIndicator.withValues(
-                alpha: 0.4,
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+              backgroundColor: AppColors.primary,
+              disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.4),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
+              elevation: 0,
             ),
           ),
         ],
@@ -355,12 +394,25 @@ class _BatchContentBody extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.error_outline_rounded,
-              size: 36.sp,
-              color: Colors.redAccent.withValues(alpha: 0.7),
+            Container(
+              width: 80.r,
+              height: 80.r,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.error.withValues(alpha: 0.15),
+                    AppColors.error.withValues(alpha: 0.05),
+                  ],
+                ),
+              ),
+              child: Icon(
+                Icons.error_outline_rounded,
+                size: 36.sp,
+                color: AppColors.error,
+              ),
             ),
-            SizedBox(height: 10.h),
+            SizedBox(height: 16.h),
             Text(
               vm.batchErrorMessage!,
               style: TextStyle(fontSize: 13.sp, color: AppColors.textPrimary),
@@ -376,12 +428,25 @@ class _BatchContentBody extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.upload_file_outlined,
-              size: 44.sp,
-              color: AppColors.sidebarIndicator.withValues(alpha: 0.35),
+            Container(
+              width: 80.r,
+              height: 80.r,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withValues(alpha: 0.15),
+                    AppColors.primary.withValues(alpha: 0.05),
+                  ],
+                ),
+              ),
+              child: Icon(
+                Icons.upload_file_outlined,
+                size: 36.sp,
+                color: AppColors.primary,
+              ),
             ),
-            SizedBox(height: 14.h),
+            SizedBox(height: 16.h),
             Text(
               '选择文件夹后将自动扫描其中的 .md 文件',
               style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
@@ -522,12 +587,12 @@ class _ScanGroupHeader extends StatelessWidget {
     return InkWell(
       onTap: () => vm.toggleGroupCollapsed(node.path),
       child: Container(
-        color: AppColors.contentBg.withValues(alpha: 0.7),
+        color: AppColors.primary.withValues(alpha: 0.04),
         padding: EdgeInsets.only(
           left: 16.w + depth * 18.w,
           right: 16.w,
-          top: 9.h,
-          bottom: 9.h,
+          top: 10.h,
+          bottom: 10.h,
         ),
         child: Row(
           children: [
@@ -535,28 +600,46 @@ class _ScanGroupHeader extends StatelessWidget {
               collapsed
                   ? Icons.chevron_right_rounded
                   : Icons.expand_more_rounded,
-              size: 16.sp,
+              size: 18.sp,
               color: AppColors.textSecondary,
             ),
-            SizedBox(width: 4.w),
-            Icon(
-              Icons.folder_outlined,
-              size: 14.sp,
-              color: AppColors.sidebarIndicator.withValues(alpha: 0.8),
-            ),
             SizedBox(width: 6.w),
+            Container(
+              padding: EdgeInsets.all(6.r),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(6.r),
+              ),
+              child: Icon(
+                Icons.folder_outlined,
+                size: 14.sp,
+                color: AppColors.primary,
+              ),
+            ),
+            SizedBox(width: 10.w),
             Text(
               node.name,
               style: TextStyle(
-                fontSize: 12.5.sp,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),
-            SizedBox(width: 8.w),
-            Text(
-              '${node.totalFileCount} 个文件',
-              style: TextStyle(fontSize: 11.sp, color: AppColors.textSecondary),
+            SizedBox(width: 10.w),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Text(
+                '${node.totalFileCount}',
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),
@@ -572,19 +655,33 @@ class _ScanPreviewHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.contentBg,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary.withValues(alpha: 0.05),
+            AppColors.contentBg,
+          ],
+        ),
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       child: Row(
         children: [
           Expanded(flex: 3, child: _headerCell('文件名')),
           Expanded(flex: 3, child: _headerCell('slug')),
           Expanded(flex: 4, child: _headerCell('title')),
-          SizedBox(
-            width: 80.w,
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
             child: Text(
-              '共 $count 个文件',
-              style: TextStyle(fontSize: 11.sp, color: AppColors.textSecondary),
-              textAlign: TextAlign.right,
+              '共 $count',
+              style: TextStyle(
+                fontSize: 11.sp,
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -771,59 +868,97 @@ class _UploadResultHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.contentBg,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary.withValues(alpha: 0.05),
+            AppColors.contentBg,
+          ],
+        ),
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       child: Row(
         children: [
           Expanded(flex: 3, child: _headerCell('文件名')),
           Expanded(flex: 3, child: _headerCell('slug')),
           Expanded(flex: 3, child: _headerCell('状态')),
-          SizedBox(
-            width: 160.w,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                if (success > 0) ...[
-                  Icon(
-                    Icons.check_circle_outline,
-                    size: 12.sp,
-                    color: Colors.green.shade600,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (success > 0) ...[
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
-                  SizedBox(width: 3.w),
-                  Text(
-                    '$success',
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      color: Colors.green.shade600,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline,
+                        size: 12.sp,
+                        color: AppColors.success,
+                      ),
+                      SizedBox(width: 4.w),
+                      Text(
+                        '$success',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: AppColors.success,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 8.w),
-                ],
-                if (fail > 0) ...[
-                  Icon(
-                    Icons.cancel_outlined,
-                    size: 12.sp,
-                    color: Colors.red.shade400,
+                ),
+                SizedBox(width: 8.w),
+              ],
+              if (fail > 0) ...[
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
-                  SizedBox(width: 3.w),
-                  Text(
-                    '$fail',
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      color: Colors.red.shade400,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.cancel_outlined,
+                        size: 12.sp,
+                        color: AppColors.error,
+                      ),
+                      SizedBox(width: 4.w),
+                      Text(
+                        '$fail',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: AppColors.error,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 8.w),
-                ],
-                Text(
+                ),
+                SizedBox(width: 8.w),
+              ],
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Text(
                   isUploading ? '$done / $total' : '共 $total',
                   style: TextStyle(
                     fontSize: 11.sp,
-                    color: AppColors.textSecondary,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -926,16 +1061,17 @@ class _StatusCell extends StatelessWidget {
             width: 12.r,
             height: 12.r,
             child: CircularProgressIndicator(
-              strokeWidth: 1.5,
-              color: AppColors.sidebarIndicator,
+              strokeWidth: 2,
+              color: AppColors.primary,
             ),
           ),
-          SizedBox(width: 6.w),
+          SizedBox(width: 8.w),
           Text(
             '上传中...',
             style: TextStyle(
               fontSize: 12.sp,
-              color: AppColors.sidebarIndicator,
+              color: AppColors.primary,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -943,37 +1079,56 @@ class _StatusCell extends StatelessWidget {
     }
     final r = result;
     if (r == null) {
-      return Text(
-        '待上传',
-        style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
+        decoration: BoxDecoration(
+          color: AppColors.textSecondary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Text(
+          '待上传',
+          style: TextStyle(
+            fontSize: 11.sp,
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       );
     }
     if (r.success) {
       return Row(
         children: [
           Icon(
-            Icons.check_circle_outline,
-            size: 13.sp,
-            color: Colors.green.shade600,
+            Icons.check_circle,
+            size: 14.sp,
+            color: AppColors.success,
           ),
-          SizedBox(width: 5.w),
+          SizedBox(width: 6.w),
           Text(
             '成功',
-            style: TextStyle(fontSize: 12.sp, color: Colors.green.shade600),
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: AppColors.success,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       );
     }
     return Row(
       children: [
-        Icon(Icons.cancel_outlined, size: 13.sp, color: Colors.red.shade400),
-        SizedBox(width: 5.w),
+        Icon(Icons.cancel, size: 14.sp, color: AppColors.error),
+        SizedBox(width: 6.w),
         Expanded(
           child: Text(
             r.error ?? '失败',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 12.sp, color: Colors.red.shade400),
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: AppColors.error,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ],

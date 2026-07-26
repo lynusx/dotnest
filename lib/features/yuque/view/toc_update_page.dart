@@ -69,36 +69,80 @@ class _TocActionBar extends StatelessWidget {
     final hasFile = vm.tocRawContent != null;
     final isUpdating = vm.isTocUpdating;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
+    return Container(
+      padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 16.h),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary.withValues(alpha: 0.03),
+            AppColors.cardBg,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
       child: Row(
         children: [
           // 文件名展示
           if (hasFile) ...[
-            Icon(
-              Icons.description_outlined,
-              size: 14.sp,
-              color: AppColors.sidebarIndicator,
-            ),
-            SizedBox(width: 6.w),
-            Flexible(
-              child: Text(
-                vm.tocFileName ?? '',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
+            Container(
+              padding: EdgeInsets.all(8.r),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Icon(
+                Icons.description_outlined,
+                size: 18.sp,
+                color: AppColors.primary,
               ),
             ),
-            SizedBox(width: 8.w),
+            SizedBox(width: 12.w),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '已选择文件',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    vm.tocFileName ?? '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 12.w),
           ] else ...[
+            Container(
+              padding: EdgeInsets.all(8.r),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Icon(
+                Icons.toc_outlined,
+                size: 18.sp,
+                color: AppColors.primary,
+              ),
+            ),
+            SizedBox(width: 12.w),
             Text(
               '目录更新',
               style: TextStyle(
-                fontSize: 13.sp,
+                fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
@@ -108,29 +152,27 @@ class _TocActionBar extends StatelessWidget {
           // 选择文件
           OutlinedButton.icon(
             onPressed: isUpdating ? null : () => vm.pickTocFile(),
-            icon: Icon(Icons.file_open_outlined, size: 15.sp),
+            icon: Icon(Icons.file_open_outlined, size: 16.sp),
             label: Text(
               hasFile ? '重新选择' : '选择 .md 文件',
               style: TextStyle(fontSize: 13.sp),
             ),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.sidebarIndicator,
-              side: BorderSide(
-                color: AppColors.sidebarIndicator.withValues(alpha: 0.5),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              foregroundColor: AppColors.primary,
+              side: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
             ),
           ),
           if (hasFile) ...[
-            SizedBox(width: 6.w),
+            SizedBox(width: 8.w),
             TextButton(
               onPressed: isUpdating ? null : vm.clearTocFile,
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.textSecondary,
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
               ),
               child: Text('清除', style: TextStyle(fontSize: 13.sp)),
             ),
@@ -149,25 +191,25 @@ class _TocActionBar extends StatelessWidget {
                   color: AppColors.textSecondary,
                 ),
                 contentPadding: EdgeInsets.symmetric(
-                  horizontal: 10.w,
-                  vertical: 8.h,
+                  horizontal: 12.w,
+                  vertical: 10.h,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(10.r),
                   borderSide: BorderSide(
-                    color: Colors.black.withValues(alpha: 0.12),
+                    color: Colors.black.withValues(alpha: 0.08),
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(10.r),
                   borderSide: BorderSide(
-                    color: Colors.black.withValues(alpha: 0.12),
+                    color: Colors.black.withValues(alpha: 0.08),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(10.r),
                   borderSide: BorderSide(
-                    color: AppColors.sidebarIndicator,
+                    color: AppColors.primary,
                     width: 1.5,
                   ),
                 ),
@@ -176,7 +218,7 @@ class _TocActionBar extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: 10.w),
+          SizedBox(width: 12.w),
           // 更新目录
           FilledButton.icon(
             onPressed: (isUpdating || !hasFile)
@@ -191,20 +233,19 @@ class _TocActionBar extends StatelessWidget {
                       color: Colors.white,
                     ),
                   )
-                : Icon(Icons.sync_outlined, size: 15.sp),
+                : Icon(Icons.sync_outlined, size: 16.sp),
             label: Text(
               isUpdating ? '更新中...' : '更新目录',
-              style: TextStyle(fontSize: 13.sp),
+              style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
             ),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.sidebarIndicator,
-              disabledBackgroundColor: AppColors.sidebarIndicator.withValues(
-                alpha: 0.4,
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+              backgroundColor: AppColors.primary,
+              disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.4),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
+              elevation: 0,
             ),
           ),
         ],
@@ -222,25 +263,36 @@ class _ErrorBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 10.h),
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
+      margin: EdgeInsets.fromLTRB(24.w, 0, 24.w, 16.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: Colors.red.shade50,
-        borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: Colors.red.shade200),
+        color: AppColors.error.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline_rounded,
-            size: 15.sp,
-            color: Colors.red.shade500,
+          Container(
+            padding: EdgeInsets.all(6.r),
+            decoration: BoxDecoration(
+              color: AppColors.error.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.error_outline_rounded,
+              size: 16.sp,
+              color: AppColors.error,
+            ),
           ),
-          SizedBox(width: 8.w),
+          SizedBox(width: 12.w),
           Expanded(
             child: Text(
               message,
-              style: TextStyle(fontSize: 13.sp, color: Colors.red.shade700),
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: AppColors.error,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
@@ -255,24 +307,35 @@ class _SuccessBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 10.h),
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
+      margin: EdgeInsets.fromLTRB(24.w, 0, 24.w, 16.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: Colors.green.shade50,
-        borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: Colors.green.shade200),
+        color: AppColors.success.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.success.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.check_circle_outline,
-            size: 15.sp,
-            color: Colors.green.shade600,
+          Container(
+            padding: EdgeInsets.all(6.r),
+            decoration: BoxDecoration(
+              color: AppColors.success.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.check_circle_outline,
+              size: 16.sp,
+              color: AppColors.success,
+            ),
           ),
-          SizedBox(width: 8.w),
+          SizedBox(width: 12.w),
           Text(
             '目录更新成功',
-            style: TextStyle(fontSize: 13.sp, color: Colors.green.shade700),
+            style: TextStyle(
+              fontSize: 13.sp,
+              color: AppColors.success,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
@@ -291,12 +354,25 @@ class _TocEmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.toc_outlined,
-            size: 44.sp,
-            color: AppColors.sidebarIndicator.withValues(alpha: 0.35),
+          Container(
+            width: 80.r,
+            height: 80.r,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.primary.withValues(alpha: 0.15),
+                  AppColors.primary.withValues(alpha: 0.05),
+                ],
+              ),
+            ),
+            child: Icon(
+              Icons.toc_outlined,
+              size: 36.sp,
+              color: AppColors.primary,
+            ),
           ),
-          SizedBox(height: 14.h),
+          SizedBox(height: 16.h),
           Text(
             '选择一个 .md 文件，将其内容作为目录提交',
             style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
@@ -316,16 +392,16 @@ class _TocPreviewBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 24.h),
+      padding: EdgeInsets.fromLTRB(24.w, 0, 24.w, 24.h),
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.cardBg,
-          borderRadius: BorderRadius.circular(10.r),
+          borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 1),
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -334,15 +410,39 @@ class _TocPreviewBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
-              color: AppColors.contentBg,
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-              child: Text(
-                '文件内容预览',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withValues(alpha: 0.05),
+                    AppColors.contentBg,
+                  ],
                 ),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(6.r),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6.r),
+                    ),
+                    child: Icon(
+                      Icons.preview_outlined,
+                      size: 14.sp,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Text(
+                    '文件内容预览',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
               ),
             ),
             Divider(
@@ -352,7 +452,7 @@ class _TocPreviewBody extends StatelessWidget {
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: EdgeInsets.all(16.r),
+                padding: EdgeInsets.all(20.r),
                 child: SelectableText(
                   vm.tocRawContent ?? '',
                   style: TextStyle(
