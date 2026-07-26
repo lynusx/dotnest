@@ -217,7 +217,9 @@ class YuqueViewModel extends ChangeNotifier {
       final indent = '  ' * depth;
       buffer.writeln('$indent- [${node.name}]()');
       for (final file in node.files) {
-        buffer.writeln('$indent  - [${file.title}](${file.slug})');
+        buffer.writeln(
+          '$indent  - [${file.title}](${file.slug.toLowerCase()})',
+        );
       }
       for (final child in node.children) {
         writeGroup(child, depth + 1);
@@ -225,7 +227,7 @@ class YuqueViewModel extends ChangeNotifier {
     }
 
     for (final file in tree.rootFiles) {
-      buffer.writeln('- [${file.title}](${file.slug})');
+      buffer.writeln('- [${file.title}](${file.slug.toLowerCase()})');
     }
     for (final group in tree.groups) {
       writeGroup(group, 0);
