@@ -95,23 +95,11 @@ class _RailLeading extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            width: 32.w,
-            height: 32.w,
-            decoration: BoxDecoration(
-              color: AppColors.sidebarIndicator,
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: Icon(Icons.grain, color: Colors.white, size: 18.sp),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            'DotNest',
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textOnDark,
-              letterSpacing: 0.3,
-            ),
+            width: 48.w,
+            height: 48.w,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.r)),
+            clipBehavior: Clip.antiAlias,
+            child: Image.asset('assets/icon/icon.png', fit: BoxFit.cover),
           ),
         ],
       ),
