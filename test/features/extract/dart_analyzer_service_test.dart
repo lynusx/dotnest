@@ -66,7 +66,7 @@ class Bar {}
     expect(nestedFile.existsSync(), isTrue);
   });
 
-  test('嵌套目录下仅含 library 文档的文件，展开到对应相对目录而非其子目录', () async {
+  test('嵌套目录下仅含 library 文档的文件，展开到输出目录根目录而非按相对路径归档', () async {
     final nestedSourceDir = Directory(p.join(sourceDir.path, 'nested'))
       ..createSync(recursive: true);
     File(
@@ -78,11 +78,13 @@ library;
 
     await service.extractFromDirectory(sourceDir.path, outputDir.path);
 
-    final expandedFile = File(p.join(outputDir.path, 'nested', 'baz.md'));
+    final rootFile = File(p.join(outputDir.path, 'baz.md'));
+    final nestedRelFile = File(p.join(outputDir.path, 'nested', 'baz.md'));
     final nestedFile = File(
       p.join(outputDir.path, 'nested', 'baz', 'baz.md'),
     );
-    expect(expandedFile.existsSync(), isTrue);
+    expect(rootFile.existsSync(), isTrue);
+    expect(nestedRelFile.existsSync(), isFalse);
     expect(nestedFile.existsSync(), isFalse);
   });
 
@@ -171,11 +173,33 @@ class Grault {}
     final types = results.map((r) => r.apiType).toList();
     expect(types, containsAll([ApiType.library, ApiType.classType]));
 
-    // macOS 大小写不敏感：grault.md 与 Grault.md 冲突，class 文件自动去重为 Grault_2.md
-    final libraryFile = File(p.join(outputDir.path, 'grault', 'grault.md'));
-    final classFile = File(p.join(outputDir.path, 'grault', 'Grault_2.md'));
+    // library 文档落在输出根目录，class 文档仍归档到同名子目录，二者不再冲突
+    final libraryFile = File(p.join(outputDir.path, 'grault.md'));
+    final classFile = File(p.join(outputDir.path, 'grault', 'Grault.md'));
     expect(libraryFile.existsSync(), isTrue);
     expect(classFile.existsSync(), isTrue);
     expect(libraryFile.readAsStringSync(), contains('Grault 库说明。'));
+  });
+
+  test('不同子目录下同名 library 文档汇总到根目录时，文件名去重避免互相覆盖', () async {
+    final aDir = Directory(p.join(sourceDir.path, 'a'))
+      ..createSync(recursive: true);
+    final bDir = Directory(p.join(sourceDir.path, 'b'))
+      ..createSync(recursive: true);
+    File(p.join(aDir.path, 'shared.dart')).writeAsStringSync('''
+/// A 目录下的库说明。
+library;
+''');
+    File(p.join(bDir.path, 'shared.dart')).writeAsStringSync('''
+/// B 目录下的库说明。
+library;
+''');
+
+    await service.extractFromDirectory(sourceDir.path, outputDir.path);
+
+    final first = File(p.join(outputDir.path, 'shared.md'));
+    final second = File(p.join(outputDir.path, 'shared_2.md'));
+    expect(first.existsSync(), isTrue);
+    expect(second.existsSync(), isTrue);
   });
 }

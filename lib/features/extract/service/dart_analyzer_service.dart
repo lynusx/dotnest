@@ -54,21 +54,37 @@ class DartAnalyzerService {
     }
 
     final classIndex = _buildClassIndex(parsedFiles);
+    final usedLibraryFileNames = <String>{};
 
     for (final pf in parsedFiles) {
       try {
-        final fileResults = _processFile(pf.unit, pf.sourcePath, classIndex);
-        if (fileResults.isNotEmpty) {
+        final fileResults = _processFile(
+          pf.unit,
+          pf.sourcePath,
+          classIndex,
+          usedLibraryFileNames,
+        );
+        if (fileResults.isEmpty) continue;
+
+        // library 文档统一展开到输出目录根目录，不归档到子目录
+        for (final r in fileResults) {
+          if (r.result.apiType != ApiType.library) continue;
+          final outputFile = File(p.join(outputDir, r.result.fileName));
+          await outputFile.writeAsString(r.markdown);
+          results.add(r.result);
+        }
+
+        // 其余 API 文档仍归档到与源文件同名的子目录下
+        final otherResults = fileResults
+            .where((r) => r.result.apiType != ApiType.library)
+            .toList();
+        if (otherResults.isNotEmpty) {
           final relDir = p.relative(p.dirname(pf.sourcePath), from: sourceDir);
-          // 纯 library 级文档：直接展开到 relDir 下，不归档到同名子目录
-          final isLibraryOnly =
-              fileResults.length == 1 &&
-              fileResults.first.result.apiType == ApiType.library;
-          final targetDir = isLibraryOnly
-              ? p.normalize(p.join(outputDir, relDir))
-              : p.normalize(p.join(outputDir, relDir, _baseName(pf.sourcePath)));
+          final targetDir = p.normalize(
+            p.join(outputDir, relDir, _baseName(pf.sourcePath)),
+          );
           await Directory(targetDir).create(recursive: true);
-          for (final r in fileResults) {
+          for (final r in otherResults) {
             final outputFile = File(p.join(targetDir, r.result.fileName));
             await outputFile.writeAsString(r.markdown);
             results.add(r.result);
@@ -118,13 +134,15 @@ class DartAnalyzerService {
     CompilationUnit unit,
     String sourcePath,
     Map<String, _ClassIndexEntry> classIndex,
+    Set<String> usedLibraryFileNames,
   ) {
     final usedFileNames = <String>{};
     final results = <_ExtractResultInternal>[];
     final libraryDoc = _extractLibraryDoc(unit);
     if (libraryDoc != null) {
       final baseName = _baseName(sourcePath);
-      final fileName = _uniqueFileName(baseName, usedFileNames);
+      // library 文档统一落在输出根目录，跨文件去重需用独立于本文件的全局集合
+      final fileName = _uniqueFileName(baseName, usedLibraryFileNames);
       final markdown = _buildMarkdown(
         _ApiInfo(
           name: baseName,
