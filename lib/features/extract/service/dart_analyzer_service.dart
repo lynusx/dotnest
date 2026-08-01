@@ -124,7 +124,8 @@ class DartAnalyzerService {
     for (final declaration in unit.declarations) {
       for (final api in _extractApis(declaration, classIndex)) {
         final fileName = _uniqueFileName(api.name, usedFileNames);
-        final markdown = _buildMarkdown(api);
+        final title = _titleFromFileName(fileName);
+        final markdown = _buildMarkdown(api, title: title);
         results.add(
           _ExtractResultInternal(
             ExtractResult(
@@ -145,6 +146,16 @@ class DartAnalyzerService {
       if (libraryDoc != null) {
         final baseName = _baseName(sourcePath);
         final fileName = _uniqueFileName(baseName, usedFileNames);
+        final title = _titleFromFileName(fileName);
+        final markdown = _buildMarkdown(
+          _ApiInfo(
+            name: baseName,
+            type: ApiType.library,
+            docComment: libraryDoc,
+            members: const [],
+          ),
+          title: title,
+        );
         results.add(
           _ExtractResultInternal(
             ExtractResult(
@@ -154,7 +165,7 @@ class DartAnalyzerService {
               sourcePath: sourcePath,
               success: true,
             ),
-            '$libraryDoc\n',
+            markdown,
           ),
         );
       }
@@ -171,6 +182,12 @@ class DartAnalyzerService {
     }
     return null;
   }
+
+  /// 由生成的 `.md` 文件名推导 frontmatter 的 `title`（去掉 `.md` 后缀），
+  /// 保证生成的 Markdown 文件名与 title 保持一致
+  String _titleFromFileName(String fileName) => fileName.endsWith('.md')
+      ? fileName.substring(0, fileName.length - 3)
+      : fileName;
 
   /// 取源文件名（去除目录与 `.dart` 后缀），用于库级文档同名输出
   String _baseName(String sourcePath) {
@@ -466,9 +483,13 @@ class DartAnalyzerService {
         rawLines.addAll(lexeme.split('\n').map(_stripBlockLine));
       }
     }
+    rawLines.removeWhere((line) => _isDocImportLine(line.trim()));
     final text = _joinDocLines(rawLines).trim();
     return text.isEmpty ? null : text;
   }
+
+  /// `@docImport 'xxx.dart';` 声明行：仅供 dartdoc 解析交叉引用，不作为文档正文输出
+  bool _isDocImportLine(String trimmed) => trimmed.startsWith('@docImport ');
 
   /// 去掉 `///` 前缀及紧随其后的单个分隔空格，其余缩进（如代码示例）原样保留
   String _stripLineComment(String lexeme) {
@@ -896,12 +917,12 @@ class DartAnalyzerService {
 
   // ── Markdown 生成 ───────────────────────────────────────────────────────────
 
-  String _buildMarkdown(_ApiInfo api) {
+  String _buildMarkdown(_ApiInfo api, {required String title}) {
     final buf = StringBuffer();
 
     buf.writeln('---');
-    buf.writeln('title: ${api.name}');
-    buf.writeln('slug: ${api.name}-${api.type.keyword}');
+    buf.writeln('title: $title');
+    buf.writeln('slug: $title-${api.type.keyword}');
     buf.writeln('---');
     buf.writeln();
     if (api.signature != null) {
