@@ -121,6 +121,34 @@ class DartAnalyzerService {
   ) {
     final usedFileNames = <String>{};
     final results = <_ExtractResultInternal>[];
+    final libraryDoc = _extractLibraryDoc(unit);
+    if (libraryDoc != null) {
+      final baseName = _baseName(sourcePath);
+      final fileName = _uniqueFileName(baseName, usedFileNames);
+      final title = _titleFromFileName(fileName);
+      final markdown = _buildMarkdown(
+        _ApiInfo(
+          name: baseName,
+          type: ApiType.library,
+          docComment: libraryDoc,
+          members: const [],
+        ),
+        title: title,
+      );
+      results.add(
+        _ExtractResultInternal(
+          ExtractResult(
+            apiName: baseName,
+            fileName: fileName,
+            apiType: ApiType.library,
+            sourcePath: sourcePath,
+            success: true,
+          ),
+          markdown,
+        ),
+      );
+    }
+
     for (final declaration in unit.declarations) {
       for (final api in _extractApis(declaration, classIndex)) {
         final fileName = _uniqueFileName(api.name, usedFileNames);
@@ -141,40 +169,10 @@ class DartAnalyzerService {
       }
     }
 
-    if (results.isEmpty) {
-      final libraryDoc = _extractLibraryDoc(unit);
-      if (libraryDoc != null) {
-        final baseName = _baseName(sourcePath);
-        final fileName = _uniqueFileName(baseName, usedFileNames);
-        final title = _titleFromFileName(fileName);
-        final markdown = _buildMarkdown(
-          _ApiInfo(
-            name: baseName,
-            type: ApiType.library,
-            docComment: libraryDoc,
-            members: const [],
-          ),
-          title: title,
-        );
-        results.add(
-          _ExtractResultInternal(
-            ExtractResult(
-              apiName: baseName,
-              fileName: fileName,
-              apiType: ApiType.library,
-              sourcePath: sourcePath,
-              success: true,
-            ),
-            markdown,
-          ),
-        );
-      }
-    }
-
     return results;
   }
 
-  /// 无公开声明时，从 `library` 指令上的文档注释中提取库级说明
+  /// 从 `library` 指令上的文档注释中提取库级说明
   String? _extractLibraryDoc(CompilationUnit unit) {
     for (final directive in unit.directives) {
       if (directive is! LibraryDirective) continue;
@@ -555,6 +553,11 @@ class DartAnalyzerService {
         out.add(trimmed);
         continue;
       }
+      if (_isHeadingLine(trimmed)) {
+        flushParagraph();
+        out.add(trimmed);
+        continue;
+      }
       final listItemText = _stripListMarker(trimmed);
       if (listItemText != null) {
         flushParagraph();
@@ -908,6 +911,8 @@ class DartAnalyzerService {
   bool _isTemplateTagLine(String trimmed) =>
       trimmed.startsWith('{@') && trimmed.endsWith('}');
 
+  bool _isHeadingLine(String trimmed) => trimmed.startsWith('#');
+
   /// 若 [trimmed] 是 `*`/`-` 加空格开头的 Markdown 列表项，返回去掉标记后的正文
   String? _stripListMarker(String trimmed) {
     if (trimmed.startsWith('* ')) return trimmed.substring(2);
@@ -1016,11 +1021,11 @@ class DartAnalyzerService {
   String _uniqueFileName(String apiName, Set<String> used) {
     String name = '$apiName.md';
     int n = 2;
-    while (used.contains(name)) {
+    while (used.contains(name.toLowerCase())) {
       name = '${apiName}_$n.md';
       n++;
     }
-    used.add(name);
+    used.add(name.toLowerCase());
     return name;
   }
 }

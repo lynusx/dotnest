@@ -151,4 +151,31 @@ class Corge {
     expect(content, isNot(contains('box_decoration.dart')));
     expect(content, contains('A decoration for a box.'));
   });
+
+  test('含 library 文档注释且有公开声明的文件，library 文档也被提取', () async {
+    File(
+      p.join(sourceDir.path, 'grault.dart'),
+    ).writeAsStringSync('''
+/// Grault 库说明。
+library;
+
+/// Grault 类。
+class Grault {}
+''');
+
+    final results = await service.extractFromDirectory(
+      sourceDir.path,
+      outputDir.path,
+    );
+
+    final types = results.map((r) => r.apiType).toList();
+    expect(types, containsAll([ApiType.library, ApiType.classType]));
+
+    // macOS 大小写不敏感：grault.md 与 Grault.md 冲突，class 文件自动去重为 Grault_2.md
+    final libraryFile = File(p.join(outputDir.path, 'grault', 'grault.md'));
+    final classFile = File(p.join(outputDir.path, 'grault', 'Grault_2.md'));
+    expect(libraryFile.existsSync(), isTrue);
+    expect(classFile.existsSync(), isTrue);
+    expect(libraryFile.readAsStringSync(), contains('Grault 库说明。'));
+  });
 }
