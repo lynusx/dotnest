@@ -1,7 +1,7 @@
 name: dotnest
 description: 'DotNest - A desktop tool for Dart API extraction and Yuque documentation sync.'
 publish_to: 'none'
-version: 0.4.2+1
+version: 0.4.3+1
 
 environment:
   sdk: ^3.12.2

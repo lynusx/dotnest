@@ -125,7 +125,6 @@ class DartAnalyzerService {
     if (libraryDoc != null) {
       final baseName = _baseName(sourcePath);
       final fileName = _uniqueFileName(baseName, usedFileNames);
-      final title = _titleFromFileName(fileName);
       final markdown = _buildMarkdown(
         _ApiInfo(
           name: baseName,
@@ -133,7 +132,7 @@ class DartAnalyzerService {
           docComment: libraryDoc,
           members: const [],
         ),
-        title: title,
+        title: baseName,
       );
       results.add(
         _ExtractResultInternal(
@@ -152,8 +151,7 @@ class DartAnalyzerService {
     for (final declaration in unit.declarations) {
       for (final api in _extractApis(declaration, classIndex)) {
         final fileName = _uniqueFileName(api.name, usedFileNames);
-        final title = _titleFromFileName(fileName);
-        final markdown = _buildMarkdown(api, title: title);
+        final markdown = _buildMarkdown(api, title: api.name);
         results.add(
           _ExtractResultInternal(
             ExtractResult(
@@ -180,12 +178,6 @@ class DartAnalyzerService {
     }
     return null;
   }
-
-  /// 由生成的 `.md` 文件名推导 frontmatter 的 `title`（去掉 `.md` 后缀），
-  /// 保证生成的 Markdown 文件名与 title 保持一致
-  String _titleFromFileName(String fileName) => fileName.endsWith('.md')
-      ? fileName.substring(0, fileName.length - 3)
-      : fileName;
 
   /// 取源文件名（去除目录与 `.dart` 后缀），用于库级文档同名输出
   String _baseName(String sourcePath) {
