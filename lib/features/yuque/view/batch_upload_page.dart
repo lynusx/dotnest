@@ -77,6 +77,12 @@ Future<void> _exportGroupedMarkdown(
   _showExportedSnackBar(context, savedPath);
 }
 
+Future<void> _exportTitleList(BuildContext context, YuqueViewModel vm) async {
+  final savedPath = await vm.exportTitleList();
+  if (!context.mounted || savedPath == null) return;
+  _showExportedSnackBar(context, savedPath);
+}
+
 /// 弹窗输入 baseURL 后导出 `{title: baseUrl/slug}` 结构的链接 .json
 Future<void> _exportLinksJson(BuildContext context, YuqueViewModel vm) async {
   final baseUrl = await showDialog<String>(
@@ -292,6 +298,23 @@ class _BatchActionBar extends StatelessWidget {
                 : () => _exportLinksJson(context, vm),
             icon: Icon(Icons.link_outlined, size: 16.sp),
             label: Text('导出链接', style: TextStyle(fontSize: 13.sp)),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              side: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+            ),
+          ),
+          SizedBox(width: 8.w),
+          // 导出标题
+          OutlinedButton.icon(
+            onPressed: (isUploading || !hasFiles)
+                ? null
+                : () => _exportTitleList(context, vm),
+            icon: Icon(Icons.title_outlined, size: 16.sp),
+            label: Text('导出标题', style: TextStyle(fontSize: 13.sp)),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.primary,
               side: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),

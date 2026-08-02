@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../model/md_file_item.dart';
 import '../model/scan_group_node.dart';
@@ -260,6 +261,24 @@ class YuqueViewModel extends ChangeNotifier {
       type: FileType.custom,
       allowedExtensions: ['json'],
       bytes: utf8.encode(jsonStr),
+    );
+    return savedPath;
+  }
+
+  /// 将扫描结果的 title 字段以 `,` 分隔导出为 .txt 文件；
+  /// 默认文件名为 `{输入目录名}_api_list.txt`；导出成功返回保存路径，用户取消返回 null
+  Future<String?> exportTitleList() async {
+    final titles = _scannedFiles.map((file) => file.title).join(',');
+    final folderName = _batchFolderPath != null
+        ? p.basename(_batchFolderPath!)
+        : 'api';
+
+    final savedPath = await FilePicker.saveFile(
+      dialogTitle: '导出标题',
+      fileName: '${folderName}_api_list.txt',
+      type: FileType.custom,
+      allowedExtensions: ['txt'],
+      bytes: utf8.encode(titles),
     );
     return savedPath;
   }
