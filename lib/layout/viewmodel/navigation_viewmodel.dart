@@ -7,6 +7,7 @@ enum NavPage {
   yuqueBatchUpload,
   yuqueTocUpdate,
   linkRewrite,
+  reclassify,
   settings,
 }
 
@@ -17,6 +18,7 @@ const List<NavPage> kNavPageOrder = [
   NavPage.yuqueBatchUpload,
   NavPage.yuqueTocUpdate,
   NavPage.linkRewrite,
+  NavPage.reclassify,
 ];
 
 extension NavPageExtension on NavPage {
@@ -34,6 +36,8 @@ extension NavPageExtension on NavPage {
         return '目录更新';
       case NavPage.linkRewrite:
         return '链接重写';
+      case NavPage.reclassify:
+        return '调整分类';
       case NavPage.settings:
         return '设置';
     }
@@ -53,6 +57,8 @@ extension NavPageExtension on NavPage {
         return Icons.account_tree_outlined;
       case NavPage.linkRewrite:
         return Icons.link_rounded;
+      case NavPage.reclassify:
+        return Icons.category_outlined;
       case NavPage.settings:
         return Icons.settings_outlined;
     }
@@ -67,6 +73,7 @@ extension NavPageExtension on NavPage {
         return true;
       case NavPage.extract:
       case NavPage.linkRewrite:
+      case NavPage.reclassify:
       case NavPage.settings:
         return false;
     }

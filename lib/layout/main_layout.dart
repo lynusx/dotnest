@@ -8,6 +8,7 @@ import '../features/yuque/view/doc_list_page.dart';
 import '../features/yuque/view/batch_upload_page.dart';
 import '../features/yuque/view/toc_update_page.dart';
 import '../features/link_rewrite/view/link_rewrite_page.dart';
+import '../features/reclassify/view/reclassify_page.dart';
 import 'viewmodel/navigation_viewmodel.dart';
 import '../features/settings/view/settings_page.dart';
 
@@ -156,6 +157,11 @@ class _SidebarMenu extends StatelessWidget {
       icon: Icons.link_rounded,
       label: '链接重写',
       page: NavPage.linkRewrite,
+    ),
+    _MenuItem(
+      icon: Icons.category_rounded,
+      label: '调整分类',
+      page: NavPage.reclassify,
     ),
   ];
 
@@ -355,6 +361,9 @@ class _ContentArea extends StatelessWidget {
         ),
         NavPage.linkRewrite => const LinkRewritePage(
           key: ValueKey('linkRewrite'),
+        ),
+        NavPage.reclassify => const ReclassifyPage(
+          key: ValueKey('reclassify'),
         ),
         NavPage.settings => const SettingsPage(key: ValueKey('settings')),
       },
