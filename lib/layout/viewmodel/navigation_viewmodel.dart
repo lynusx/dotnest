@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 enum NavPage {
   extract,
@@ -84,8 +85,22 @@ class NavigationViewModel extends ChangeNotifier {
   NavPage _currentPage = NavPage.extract;
   // tracks the last non-settings page so NavigationRail always has a valid index
   NavPage _lastContentPage = NavPage.extract;
+  String _appVersion = '';
+
+  NavigationViewModel() {
+    _loadAppVersion();
+  }
 
   NavPage get currentPage => _currentPage;
+
+  /// 应用版本号（如 "v0.6.0"），加载完成前为空字符串
+  String get appVersion => _appVersion;
+
+  Future<void> _loadAppVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    _appVersion = 'v${info.version}';
+    notifyListeners();
+  }
 
   /// Index for NavigationRail — always valid, holds the last content page
   /// even when the user is on the Settings screen.

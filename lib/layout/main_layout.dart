@@ -321,7 +321,7 @@ class _SidebarFooter extends StatelessWidget {
           ),
           SizedBox(height: 12.h),
           Text(
-            'v0.1.0',
+            vm.appVersion,
             style: TextStyle(
               fontSize: 11.sp,
               color: AppColors.textOnDarkMuted.withValues(alpha: 0.4),
